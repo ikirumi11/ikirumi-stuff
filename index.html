@@ -1,11 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ikirumi Stuff</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial;background:#0b0d12;color:#f5f7fb}header{padding:24px 28px;border-bottom:1px solid #252936;background:#10131a;position:sticky;top:0;z-index:5}h1{margin:0 0 6px;font-size:28px}.sub{color:#9299aa}.bar{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}input,button{border:1px solid #303544;background:#171b24;color:#fff;border-radius:10px;padding:11px 14px;font:inherit}input{flex:1;min-width:220px}button{cursor:pointer}button:hover{background:#202532}.wrap{max-width:1200px;margin:auto;padding:24px 28px}.crumbs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.crumb{color:#8eb7ff;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.card{background:#11151d;border:1px solid #252a36;border-radius:14px;padding:16px;min-height:110px;display:flex;flex-direction:column;gap:10px;cursor:pointer}.card:hover{border-color:#536078;transform:translateY(-1px)}.icon{font-size:30px}.name{font-weight:700;overflow-wrap:anywhere}.meta{font-size:12px;color:#858c9d;margin-top:auto}.empty,.error{padding:30px;text-align:center;color:#9aa2b3}.error{color:#ff9b9b}.preview{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:25px;z-index:20}.modal{max-width:1000px;max-height:90vh;width:100%;background:#11151d;border:1px solid #303544;border-radius:16px;padding:18px;overflow:auto}.modal img,.modal video{max-width:100%;max-height:70vh;display:block;margin:auto}.modal iframe{width:100%;height:70vh;border:0}.close{float:right}.status{margin:12px 0;color:#8f97a9;font-size:13px}.count{color:#737b8e;font-size:13px;margin-bottom:12px}.private{background:#17131a;border:1px solid #46354b;padding:12px;border-radius:10px;color:#d4b9dc;margin-top:12px;display:none}.hidden{display:none!important}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial;background:#0b0d12;color:#f5f7fb}header{padding:24px 28px;border-bottom:1px solid #252936;background:#10131a;position:sticky;top:0;z-index:5}h1{margin:0 0 6px;font-size:28px}.sub{color:#9299aa}.bar{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}input,button{border:1px solid #303544;background:#171b24;color:#fff;border-radius:10px;padding:11px 14px;font:inherit}input{flex:1;min-width:220px}button{cursor:pointer}button:hover{background:#202532}.wrap{max-width:1200px;margin:auto;padding:24px 28px}.crumbs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.crumb{color:#8eb7ff;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.card{background:#11151d;border:1px solid #252a36;border-radius:14px;padding:16px;min-height:110px;display:flex;flex-direction:column;gap:10px;cursor:pointer}.card:hover{border-color:#536078;transform:translateY(-1px)}.icon{font-size:30px}.name{font-weight:700;overflow-wrap:anywhere}.meta{font-size:12px;color:#858c9d;margin-top:auto}.empty,.error{padding:30px;text-align:center;color:#9aa2b3}.error{color:#ff9b9b}.preview{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:25px;z-index:20}.modal{max-width:1000px;max-height:90vh;width:100%;background:#11151d;border:1px solid #303544;border-radius:16px;padding:18px;overflow:auto}.modal img,.modal video{max-width:100%;max-height:70vh;display:block;margin:auto}.modal iframe{width:100%;height:70vh;border:0}.close{float:right}.status{margin:12px 0;color:#8f97a9;font-size:13px}.count{color:#737b8e;font-size:13px;margin-bottom:12px}.private{background:#17131a;border:1px solid #46354b;padding:12px;border-radius:10px;color:#d4b9dc;margin-top:12px;display:none}
 </style>
 </head>
 <body>
@@ -14,50 +13,12 @@
 <div id="preview" class="preview"><div class="modal"><button class="close" onclick="closePreview()">✕</button><h2 id="ptitle"></h2><div id="pbody"></div></div></div>
 <script>
 const OWNER='ikirumi11',REPO='ikirumi-stuff',BRANCH='main';
-const API=`https://api.github.com/repos/${OWNER}/${REPO}`;
-let all=[],path='';
-const $=id=>document.getElementById(id);
-function token(){return localStorage.getItem('ikirumi_github_token')||''}
+const API=`https://api.github.com/repos/${OWNER}/${REPO}`;let all=[],path='';
+const $=id=>document.getElementById(id);function token(){return localStorage.getItem('ikirumi_github_token')||''}
 function showToken(){const old=token();const t=prompt('GitHub access token (read-only access is enough):',old);if(t!==null){if(t.trim())localStorage.setItem('ikirumi_github_token',t.trim());else localStorage.removeItem('ikirumi_github_token');loadRepo()}}
-async function loadRepo(){
- $('status').textContent='Loading repository…';
- try{const headers={'Accept':'application/vnd.github+json'};if(token())headers.Authorization='Bearer '+token();
-  const r=await fetch(`${API}/git/trees/${BRANCH}?recursive=1`,{headers});
-  if(!r.ok)throw new Error(r.status===404?'Repository not found or private access is required.':r.status===401?'Invalid GitHub token.':'GitHub API error '+r.status);
-  const data=await r.json();all=(data.tree||[]).filter(x=>x.path&&!x.path.startsWith('.git/'));
-  $('status').textContent='Connected to GitHub';$('private').style.display=token()?'none':'block';render();
- }catch(e){$('status').textContent='Could not load repository';$('grid').innerHTML='<div class="error">'+escapeHtml(e.message)+'<br><br>If the repository is private, use 🔐 Access.</div>'}
-}
-function render(){
- const q=$('search').value.trim().toLowerCase();
- let prefix=path?path+'/':'';
- let items=[];
- if(q){items=all.filter(x=>x.path.toLowerCase().includes(q));}
- else{
-  const map=new Map();
-  for(const x of all){if(!x.path.startsWith(prefix))continue;const rest=x.path.slice(prefix.length);if(!rest)continue;const part=rest.split('/')[0];if(map.has(part))continue;const isFolder=rest.includes('/');map.set(part,{name:part,path:prefix+part,type:isFolder?'tree':x.type,size:isFolder?null:x.size,sha:x.sha})}
-  items=[...map.values()].sort((a,b)=>(a.type==='tree'?0:1)-(b.type==='tree'?0:1)||a.name.localeCompare(b.name));
- }
- $('crumbs').innerHTML='<span class="crumb" onclick="go(\'\')">Home</span>'+ (path?path.split('/').map((p,i)=>{const pp=path.split('/').slice(0,i+1).join('/');return '<span>›</span><span class="crumb" onclick="go(\''+encodeURIComponent(pp)+'\')">'+escapeHtml(p)+'</span>'}).join(''):'');
- $('count').textContent=items.length+' item'+(items.length===1?'':'s');
- $('grid').innerHTML=items.length?items.map(item=>`<article class="card" onclick="openItem(${JSON.stringify(item).replace(/</g,'\\u003c')})"><div class="icon">${item.type==='tree'?'📁':icon(item.name)}</div><div class="name">${escapeHtml(item.name)}</div><div class="meta">${item.type==='tree'?'Folder':formatSize(item.size)}</div></article>`).join(''):'<div class="empty">Nothing here.</div>';
-}
-function go(p){path=decodeURIComponent(p);$('search').value='';render()}
-function openItem(x){if(x.type==='tree'){path=x.path;render();return}preview(x)}
-function preview(x){$('ptitle').textContent=x.name;const url=`https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${x.path.split('/').map(encodeURIComponent).join('/')}`;const ext=x.name.split('.').pop().toLowerCase();let body='';
- if(['png','jpg','jpeg','gif','webp','svg','bmp'].includes(ext))body=`<img src="${url}" alt="">`;
- else if(['mp4','webm','ogg'].includes(ext))body=`<video controls src="${url}"></video>`;
- else if(ext==='pdf')body=`<iframe src="${url}"></iframe>`;
- else if(['txt','md','json','js','css','html','xml','csv'].includes(ext))body=`<pre style="white-space:pre-wrap;overflow:auto">Loading…</pre>`;
- else body=`<p>This file cannot be previewed here.</p><p><a style="color:#8eb7ff" href="${url}" target="_blank" rel="noopener">Open file</a></p>`;
- $('pbody').innerHTML=body;$('preview').style.display='flex';
- if(['txt','md','json','js','css','html','xml','csv'].includes(ext))fetch(url).then(r=>r.text()).then(t=>{$('pbody').querySelector('pre').textContent=t}).catch(()=>{$('pbody').querySelector('pre').textContent='Preview unavailable.'});
-}
-function closePreview(){$('preview').style.display='none';$('pbody').innerHTML=''}
-$('search').addEventListener('input',render);$('preview').addEventListener('click',e=>{if(e.target.id==='preview')closePreview()});
-function icon(n){const e=n.split('.').pop().toLowerCase();if(['png','jpg','jpeg','gif','webp','svg'].includes(e))return'🖼️';if(['mp4','webm','ogg'].includes(e))return'🎬';if(e==='pdf')return'📕';if(['zip','rar','7z'].includes(e))return'🗜️';if(['js','html','css','json','cs','py'].includes(e))return'💻';return'📄'}
-function formatSize(n){if(n==null)return'';if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';if(n<1073741824)return(n/1048576).toFixed(1)+' MB';return(n/1073741824).toFixed(1)+' GB'}
-function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-loadRepo();
-</script>
-</body></html>
+async function loadRepo(){ $('status').textContent='Loading repository…';try{const headers={'Accept':'application/vnd.github+json'};if(token())headers.Authorization='Bearer '+token();const r=await fetch(`${API}/git/trees/${BRANCH}?recursive=1`,{headers});if(!r.ok)throw new Error(r.status===404?'Repository not found or private access is required.':r.status===401?'Invalid GitHub token.':'GitHub API error '+r.status);const data=await r.json();all=(data.tree||[]).filter(x=>x.path&&!x.path.startsWith('.git/'));$('status').textContent='Connected to GitHub';$('private').style.display=token()?'none':'block';render()}catch(e){$('status').textContent='Could not load repository';$('grid').innerHTML='<div class="error">'+escapeHtml(e.message)+'<br><br>If the repository is private, use 🔐 Access.</div>'}}
+function render(){const q=$('search').value.trim().toLowerCase();const prefix=path?path+'/':'';let items=[];if(q)items=all.filter(x=>x.path.toLowerCase().includes(q));else{const map=new Map();for(const x of all){if(!x.path.startsWith(prefix))continue;const rest=x.path.slice(prefix.length);if(!rest)continue;const part=rest.split('/')[0];if(map.has(part))continue;map.set(part,{name:part,path:prefix+part,type:rest.includes('/')?'tree':x.type,size:rest.includes('/')?null:x.size,sha:x.sha})}items=[...map.values()].sort((a,b)=>(a.type==='tree'?0:1)-(b.type==='tree'?0:1)||a.name.localeCompare(b.name))}$('crumbs').innerHTML='<span class="crumb" onclick="go(\'\')">Home</span>'+(path?path.split('/').map((p,i)=>{const pp=path.split('/').slice(0,i+1).join('/');return '<span>›</span><span class="crumb" onclick="go(\''+encodeURIComponent(pp)+'\')">'+escapeHtml(p)+'</span>'}).join(''):'');$('count').textContent=items.length+' item'+(items.length===1?'':'s');$('grid').innerHTML=items.length?items.map(item=>`<article class="card" onclick="openItem(${JSON.stringify(item).replace(/</g,'\\u003c')})"><div class="icon">${item.type==='tree'?'📁':icon(item.name)}</div><div class="name">${escapeHtml(item.name)}</div><div class="meta">${item.type==='tree'?'Folder':formatSize(item.size)}</div></article>`).join(''):'<div class="empty">Nothing here.</div>'}
+function go(p){path=decodeURIComponent(p);$('search').value='';render()}function openItem(x){if(x.type==='tree'){path=x.path;render();return}preview(x)}
+function preview(x){$('ptitle').textContent=x.name;const url=`https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${x.path.split('/').map(encodeURIComponent).join('/')}`;const ext=x.name.split('.').pop().toLowerCase();let body='';if(['png','jpg','jpeg','gif','webp','svg','bmp'].includes(ext))body=`<img src="${url}" alt="">`;else if(['mp4','webm','ogg'].includes(ext))body=`<video controls src="${url}"></video>`;else if(ext==='pdf')body=`<iframe src="${url}"></iframe>`;else if(['txt','md','json','js','css','html','xml','csv'].includes(ext))body='<pre style="white-space:pre-wrap;overflow:auto">Loading…</pre>';else body=`<p>This file cannot be previewed here.</p><p><a style="color:#8eb7ff" href="${url}" target="_blank" rel="noopener">Open file</a></p>`;$('pbody').innerHTML=body;$('preview').style.display='flex';if(['txt','md','json','js','css','html','xml','csv'].includes(ext))fetch(url).then(r=>r.text()).then(t=>$('pbody').querySelector('pre').textContent=t).catch(()=>{$('pbody').querySelector('pre').textContent='Preview unavailable.'})}
+function closePreview(){$('preview').style.display='none';$('pbody').innerHTML=''}$('search').addEventListener('input',render);$('preview').addEventListener('click',e=>{if(e.target.id==='preview')closePreview()});function icon(n){const e=n.split('.').pop().toLowerCase();if(['png','jpg','jpeg','gif','webp','svg'].includes(e))return'🖼️';if(['mp4','webm','ogg'].includes(e))return'🎬';if(e==='pdf')return'📕';if(['zip','rar','7z'].includes(e))return'🗜️';if(['js','html','css','json','cs','py'].includes(e))return'💻';return'📄'}function formatSize(n){if(n==null)return'';if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';if(n<1073741824)return(n/1048576).toFixed(1)+' MB';return(n/1073741824).toFixed(1)+' GB'}function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}loadRepo();
+</script></body></html>
