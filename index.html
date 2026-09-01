@@ -1,12 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Testiiing</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ikirumi • Personal Space</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,sans-serif;background:#0b0d12;color:#f4f6fb;min-height:100vh}body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 15% 10%,#26385f55,transparent 35%),radial-gradient(circle at 90% 80%,#49305a44,transparent 35%);pointer-events:none}.wrap{position:relative;max-width:1250px;margin:auto;padding:28px}.top{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:28px}.brand{display:flex;align-items:center;gap:14px}.avatar{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#fff,#8b93a7);color:#111;display:grid;place-items:center;font-weight:900;font-size:20px;box-shadow:0 10px 30px #0006}.brand h1{font-size:19px;margin:0}.brand p{margin:3px 0 0;color:#8d96a8;font-size:12px}.status{border:1px solid #ffffff12;background:#11151d;padding:10px 14px;border-radius:14px;color:#aab3c4;font-size:12px}.status b{color:#76e39b}.hero{padding:34px;border:1px solid #ffffff10;background:linear-gradient(135deg,#151a24ee,#10131ae8);border-radius:25px;box-shadow:0 25px 70px #0006;margin-bottom:20px}.hero h2{font-size:38px;margin:0 0 8px;letter-spacing:-1.5px}.hero p{color:#929caf;margin:0;max-width:650px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{border:1px solid #ffffff0e;background:#11151dce;border-radius:20px;padding:20px;min-height:155px;transition:.2s;box-shadow:0 12px 35px #0003}.card:hover{transform:translateY(-3px);border-color:#ffffff22;background:#151a23}.icon{font-size:25px;margin-bottom:13px}.card h3{margin:0 0 7px;font-size:16px}.card p{color:#818b9e;font-size:13px;line-height:1.5;margin:0 0 17px}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #ffffff12;background:#191f2a;color:#dfe5ef;border-radius:11px;padding:9px 13px;font-size:12px;cursor:pointer;transition:.18s}.btn:hover{background:#242b39;border-color:#ffffff2b}.empty{border-style:dashed;opacity:.8}.empty .badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#ffffff08;color:#788397;font-size:10px}.wide{grid-column:span 2}.footer{text-align:center;color:#555f70;font-size:11px;padding:25px}.clock{font-variant-numeric:tabular-nums;color:#cbd3df}@media(max-width:800px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.top{align-items:flex-start}.hero h2{font-size:30px}.wrap{padding:16px}}
+</style>
 </head>
 <body>
-
-<h1>Testing bebe 232636363</h1>
-
+<div class="wrap">
+<header class="top">
+<div class="brand"><div class="avatar">I</div><div><h1>Ikirumi Personal Space</h1><p>Private dashboard · Nothing added yet</p></div></div>
+<div class="status"><b>● Online</b> &nbsp; <span class="clock" id="clock">--:--</span></div>
+</header>
+<section class="hero"><h2>Welcome back.</h2><p>This is your personal web space. It is ready for your projects, files, notes, games and other private stuff whenever you decide to add them.</p></section>
+<section class="grid">
+<div class="card"><div class="icon">📁</div><h3>My Files</h3><p>A place for your personal files and folders.</p><button class="btn" onclick="empty('My Files')">Open →</button></div>
+<div class="card"><div class="icon">🎮</div><h3>My Games</h3><p>Your games and game projects can live here.</p><button class="btn" onclick="empty('My Games')">Open →</button></div>
+<div class="card"><div class="icon">📝</div><h3>Notes</h3><p>Personal notes, ideas and things you want to keep.</p><button class="btn" onclick="empty('Notes')">Open →</button></div>
+<div class="card"><div class="icon">🧰</div><h3>Projects</h3><p>Quick access to projects and unfinished ideas.</p><button class="btn" onclick="empty('Projects')">Open →</button></div>
+<div class="card empty wide"><div class="icon">🔒</div><h3>Private Area</h3><p>Nothing is stored here yet. This section is intentionally empty and ready for future personal content.</p><span class="badge">EMPTY</span></div>
+<div class="card"><div class="icon">⚙️</div><h3>Settings</h3><p>Personal website settings and preferences.</p><button class="btn" onclick="empty('Settings')">Open →</button></div>
+</section>
+<footer class="footer">Personal Space · Built for your own stuff · <span id="date"></span></footer>
+</div>
+<script>
+function empty(name){alert(name+' is empty for now. Add your content here later!')}
+function update(){let d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});document.getElementById('date').textContent=d.toLocaleDateString([], {year:'numeric',month:'long',day:'numeric'})}update();setInterval(update,1000);
+</script>
 </body>
 </html>
