@@ -14,7 +14,7 @@
   <main class="workspace">
     <aside class="panel library">
       <h2>Blocks</h2>
-      <p class="muted">Drag blocks into the graph.</p>
+      <p class="muted">Use Add to spawn a code block into the graph.</p>
       <div class="block-list">
         <button class="palette mesh" data-type="box">▣ Box</button>
         <button class="palette mesh" data-type="cylinder">◉ Cylinder</button>
@@ -27,7 +27,9 @@
       <div id="variables"></div>
     </aside>
     <section class="graph-wrap">
+      <button id="addBtn" class="add-side-btn" type="button"><span>＋</span> Add</button>
       <div id="graph" class="graph"></div>
+      <div id="contextMenu" class="context-menu" hidden></div>
       <div class="hint">Drag empty space to pan · drag a block to move · connect matching ports</div>
     </section>
     <aside class="panel preview-panel">
