@@ -4,8 +4,8 @@
 <body>
 <header class="topbar"><div class="brand"><span class="brand-mark">◆</span><span>ModelFlow</span><small>Offline Procedural 3D</small></div><div class="toolbar"><button id="runBtn">▶ Run</button><button id="resetBtn">↻ Reset</button><span id="status">Ready</span></div></header>
 <main class="workspace">
-<aside class="panel library"><h2>Code Blocks</h2><p class="muted">Double-click empty graph space to open the block menu.</p><div class="block-list" id="palette"></div><h3>Variables</h3><div id="variables"></div></aside>
-<section class="graph-wrap"><div id="graph" class="graph"></div><div id="contextMenu" class="context-menu" hidden></div><div class="hint">Double-click empty space · drag nodes · drag output ports into inputs</div></section>
+<aside class="panel library"><h2>Code Blocks</h2><p class="muted">Use Add to spawn a code block into the graph.</p><div class="block-list" id="palette"></div><h3>Variables</h3><div id="variables"></div></aside>
+<section class="graph-wrap"><button id="addBtn" class="add-side-btn" type="button"><span>＋</span> Add</button><div id="graph" class="graph"></div><div id="contextMenu" class="context-menu" hidden></div><div class="hint">Click Add to spawn a block · double-click empty space also opens the block menu</div></section>
 <aside class="panel preview-panel"><h2>3D Preview</h2><canvas id="preview"></canvas><div class="preview-info"><b>Live model</b><span id="modelInfo">No model</span></div><div class="inspector"><h3>Selected</h3><div id="inspector">Select a block</div></div></aside>
 </main><script type="module" src="js/app-offline.js"></script>
 </body></html>
