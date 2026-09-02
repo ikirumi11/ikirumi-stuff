@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ModelFlow — Procedural 3D</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">◆</span><span>ModelFlow</span><small>Procedural 3D</small></div>
+    <div class="toolbar"><button id="runBtn">▶ Run</button><button id="resetBtn">↻ Reset</button><span id="status">Live</span></div>
+  </header>
+  <main class="workspace">
+    <aside class="panel library">
+      <h2>Blocks</h2>
+      <p class="muted">Drag blocks into the graph.</p>
+      <div class="block-list">
+        <button class="palette mesh" data-type="box">▣ Box</button>
+        <button class="palette mesh" data-type="cylinder">◉ Cylinder</button>
+        <button class="palette mesh" data-type="sphere">● Sphere</button>
+        <button class="palette math" data-type="multiply">× Multiply</button>
+        <button class="palette math" data-type="add">＋ Add</button>
+        <button class="palette transform" data-type="transform">↗ Transform</button>
+      </div>
+      <h3>Variables</h3>
+      <div id="variables"></div>
+    </aside>
+    <section class="graph-wrap">
+      <div id="graph" class="graph"></div>
+      <div class="hint">Drag empty space to pan · drag a block to move · connect matching ports</div>
+    </section>
+    <aside class="panel preview-panel">
+      <h2>3D Preview</h2>
+      <canvas id="preview"></canvas>
+      <div class="preview-info"><b>Live model</b><span id="modelInfo">Box</span></div>
+      <div class="inspector"><h3>Selected</h3><div id="inspector">Select a block</div></div>
+    </aside>
+  </main>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
