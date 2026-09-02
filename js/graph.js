@@ -14,8 +14,15 @@ const TYPES={
  output:{title:'Model Output',kind:'Output',cat:'output',inputs:[['mesh','Model','mesh']],outputs:[]}
 };
 export class Graph{
- constructor(el,onChange){this.el=el;this.onChange=onChange;this.nodes=[];this.wires=[];this.drag=null;this.connecting=null;this.offset={x:0,y:0};this.bind();this.menu=document.querySelector('#contextMenu')}
- bind(){this.el.addEventListener('pointerdown',e=>{if(e.target===this.el){this.hideMenu();this.el.setPointerCapture?.(e.pointerId);this.drag={x:e.clientX,y:e.clientY,ox:this.offset.x,oy:this.offset.y}}});this.el.addEventListener('pointermove',e=>{if(this.drag){this.offset.x=this.drag.ox+e.clientX-this.drag.x;this.offset.y=this.drag.oy+e.clientY-this.drag.y;this.render()}});this.el.addEventListener('pointerup',()=>this.drag=null);this.el.addEventListener('pointercancel',()=>this.drag=null);this.el.addEventListener('contextmenu',e=>{e.preventDefault();if(e.target.closest('.node'))return;this.showMenu(e.clientX,e.clientY,e.clientX,e.clientY)});document.addEventListener('pointerdown',e=>{if(!e.target.closest('.context-menu'))this.hideMenu()})}
+ constructor(el,onChange){this.el=el;this.onChange=onChange;this.nodes=[];this.wires=[];this.drag=null;this.connecting=null;this.offset={x:0,y:0};this.lastTap=0;this.bind();this.menu=document.querySelector('#contextMenu')}
+ bind(){
+  this.el.addEventListener('pointerdown',e=>{if(e.target===this.el){this.hideMenu();this.el.setPointerCapture?.(e.pointerId);this.drag={x:e.clientX,y:e.clientY,ox:this.offset.x,oy:this.offset.y}}});
+  this.el.addEventListener('pointermove',e=>{if(this.drag){this.offset.x=this.drag.ox+e.clientX-this.drag.x;this.offset.y=this.drag.oy+e.clientY-this.drag.y;this.render()}});
+  this.el.addEventListener('pointerup',()=>this.drag=null);this.el.addEventListener('pointercancel',()=>this.drag=null);
+  this.el.addEventListener('dblclick',e=>{if(e.target.closest('.node'))return;e.preventDefault();this.showMenu(e.clientX,e.clientY,e.clientX,e.clientY)});
+  this.el.addEventListener('contextmenu',e=>{e.preventDefault()});
+  document.addEventListener('pointerdown',e=>{if(!e.target.closest('.context-menu'))this.hideMenu()})
+ }
  showMenu(clientX,clientY,gx,gy){this.menu.innerHTML=`<div class="menu-item has-sub"><span>＋ Add</span><span class="menu-arrow">›</span><div class="submenu"><div class="menu-section">Code Block</div>${Object.entries(TYPES).map(([type,t])=>`<button class="menu-item create-code" data-type="${type}"><span><i class="type-dot ${t.cat}"></i>${t.title}</span><span class="menu-arrow">${t.kind}</span></button>`).join('')}</div></div>`;this.menu.hidden=false;const r=this.el.getBoundingClientRect();this.menu.style.left=Math.max(4,Math.min(clientX-r.left,this.el.clientWidth-205))+'px';this.menu.style.top=Math.max(4,Math.min(clientY-r.top,this.el.clientHeight-45))+'px';this.menu.querySelectorAll('.create-code').forEach(b=>b.onclick=()=>{this.add(b.dataset.type,gx,gy);this.hideMenu()})}
  hideMenu(){if(this.menu)this.menu.hidden=true}
  add(type,x=120,y=100){const def=TYPES[type];if(!def)return;const values={};for(const i of def.inputs)values[i[0]]=Array.isArray(i[3])?[...i[3]]:i[3];if(type==='number'||type==='float'||type==='integer')values.value=1;if(type==='string')values.value='Hello';if(type==='vector3')values.value=[0,0,0];const n={id:crypto.randomUUID(),type,x:x-this.offset.x,y:y-this.offset.y,values};this.nodes.push(n);this.render();this.onChange?.(this.nodes,this.wires)}
