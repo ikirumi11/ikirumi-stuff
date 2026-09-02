@@ -1,0 +1,1 @@
+export const presets={cube:{name:'Cube',sx:2,sy:2,sz:2},sphere:{name:'Sphere',r:1,seg:20,rings:12},cylinder:{name:'Cylinder',r:1,h:2,seg:20}};export const examples=[['Cube','Move','Rotate Y','Bevel'],['Cylinder','Scale','Extrude','Bevel'],['Sphere','Scale','Smooth']];
