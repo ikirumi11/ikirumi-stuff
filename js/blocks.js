@@ -1,5 +1,5 @@
 export const categories={
-Primitives:['Cube','Sphere','Cylinder','Cone','Plane','Torus','Grid','Circle','Line','Pyramid','Capsule','Icosphere','Tube','Disc','Box'],
+Primitives:['Code','Cube','Sphere','Cylinder','Cone','Plane','Torus','Grid','Circle','Line','Pyramid','Capsule','Icosphere','Tube','Disc','Box'],
 Transforms:['Move','Rotate X','Rotate Y','Rotate Z','Scale','Scale X','Scale Y','Scale Z','Mirror X','Mirror Y','Mirror Z','Apply Transform','Center','Align X','Align Y','Align Z','Snap','Randomize Transform'],
 Mesh:['Extrude','Inset','Bevel','Subdivide','Triangulate','Quadrangulate','Flip Faces','Merge Vertices','Weld','Delete Faces','Delete Edges','Delete Vertices','Separate','Merge','Bridge','Fill','Make Planar','Smooth','Flat Shading'],
 Faces:['Select Face','Select All Faces','Invert Faces','Grow Selection','Shrink Selection','Extrude Faces','Inset Faces','Scale Faces','Rotate Faces','Move Faces','Bevel Faces','Delete Selected Faces'],
