@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MeshForge — Blender × ProBuilder</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+<header class="topbar">
+  <div class="brand"><span class="logo">◆</span><div><b>MeshForge</b><small>Blender × ProBuilder</small></div></div>
+  <div class="menus"><button data-menu="file">File</button><button data-menu="edit">Edit</button><button data-menu="mesh">Mesh</button><button data-menu="view">View</button></div>
+  <div class="actions"><button id="undoBtn">↶</button><button id="redoBtn">↷</button><button id="saveBtn">Save</button><button id="loadBtn">Load</button></div>
+</header>
+<div class="workspace">
+  <aside class="leftbar">
+    <button class="tool active" data-tool="select" title="Select (1)">⌁<span>Select</span></button>
+    <button class="tool" data-tool="move" title="Move (G)">✥<span>Move</span></button>
+    <button class="tool" data-tool="rotate" title="Rotate (R)">⟳<span>Rotate</span></button>
+    <button class="tool" data-tool="scale" title="Scale (S)">◈<span>Scale</span></button>
+    <div class="sep"></div>
+    <button class="tool" data-tool="extrude" title="Extrude (Ctrl+E)">↥<span>Extrude</span></button>
+    <button class="tool" data-tool="inset" title="Inset (I)">▣<span>Inset</span></button>
+    <button class="tool" data-tool="bevel" title="Bevel (Ctrl+B)">◇<span>Bevel</span></button>
+    <button class="tool" data-tool="loop" title="Loop cut">⊕<span>Loop</span></button>
+    <div class="sep"></div>
+    <button class="tool" data-tool="vertex" title="Vertex mode (1)">•<span>Vertex</span></button>
+    <button class="tool" data-tool="edge" title="Edge mode (2)">／<span>Edge</span></button>
+    <button class="tool" data-tool="face" title="Face mode (3)">▰<span>Face</span></button>
+  </aside>
+  <main id="viewport"><div id="hint">Left click selects • Right drag orbit • Wheel zoom • G/M/R/S transform • Ctrl+E extrude</div><div id="status"></div></main>
+  <aside class="rightpanel">
+    <section><div class="section-title">Scene</div><div id="sceneTree"></div><button id="addCube" class="wide">＋ Add Cube</button><button id="addPlane" class="wide">＋ Add Plane</button></section>
+    <section><div class="section-title">Selection</div><div id="selectionInfo">Nothing selected</div></section>
+    <section><div class="section-title">Transform</div><div class="fields">
+      <label>Position X <input id="px" type="number" step="0.01"></label><label>Y <input id="py" type="number" step="0.01"></label><label>Z <input id="pz" type="number" step="0.01"></label>
+      <label>Rotation X <input id="rx" type="number" step="1"></label><label>Y <input id="ry" type="number" step="1"></label><label>Z <input id="rz" type="number" step="1"></label>
+      <label>Scale X <input id="sx" type="number" step="0.01"></label><label>Y <input id="sy" type="number" step="0.01"></label><label>Z <input id="sz" type="number" step="0.01"></label>
+    </div></section>
+    <section><div class="section-title">Mesh</div><div class="row"><button id="deleteBtn">Delete</button><button id="duplicateBtn">Duplicate</button></div><div class="row"><button id="triBtn">Triangulate</button><button id="flipBtn">Flip</button></div></section>
+    <section><div class="section-title">Extrude</div><label class="range">Distance <input id="extrudeDistance" type="range" min="0.05" max="3" step="0.05" value="0.5"><output id="extrudeOut">0.50</output></label><p class="muted">Ctrl+E then drag vertically in the viewport, or use the distance control.</p></section>
+  </aside>
+</div>
+<footer class="footer"><span id="modeLabel">Object Mode</span><span>Faces: <b id="faceCount">0</b></span><span>Vertices: <b id="vertexCount">0</b></span><span>Grid: 1m</span><span class="grow"></span><span>MeshForge local editor</span></footer>
+</div>
+<input id="fileInput" type="file" accept=".json,.meshforge" hidden>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
+<script type="module" src="main.js"></script>
+</body></html>
