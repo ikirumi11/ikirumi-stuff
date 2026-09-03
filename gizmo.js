@@ -1,0 +1,3 @@
+import * as THREE from 'three';
+export function makeGizmo(){const g=new THREE.Group();const mats=[new THREE.MeshBasicMaterial({color:0xdd4444}),new THREE.MeshBasicMaterial({color:0x55cc66}),new THREE.MeshBasicMaterial({color:0x4488ee})];[[1,0,0],[0,1,0],[0,0,1]].forEach((a,i)=>{const q=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.8,8),mats[i]);q.position.set(a[0]*.4,a[1]*.4,a[2]*.4);if(i===0)q.rotation.z=-Math.PI/2;if(i===2)q.rotation.x=Math.PI/2;g.add(q)});return g}
+export function attachGizmo(scene,obj){const g=makeGizmo();g.position.copy(obj.position);scene.add(g);return g}
