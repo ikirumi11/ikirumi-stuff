@@ -1,3 +1,0 @@
-This is a shared gallery text file.
-You can upload images and videos to the gallery. This file was added to demonstrate adding plain text assets to the project.
-Created: 2026-06-29
