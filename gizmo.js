@@ -1,3 +1,6 @@
 import * as THREE from 'three';
-export function makeGizmo(){const g=new THREE.Group();const mats=[new THREE.MeshBasicMaterial({color:0xdd4444}),new THREE.MeshBasicMaterial({color:0x55cc66}),new THREE.MeshBasicMaterial({color:0x4488ee})];[[1,0,0],[0,1,0],[0,0,1]].forEach((a,i)=>{const q=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.8,8),mats[i]);q.position.set(a[0]*.4,a[1]*.4,a[2]*.4);if(i===0)q.rotation.z=-Math.PI/2;if(i===2)q.rotation.x=Math.PI/2;g.add(q)});return g}
+export function makeGizmo(){const g=new THREE.Group();[[0xdd4444,1,0,0],[0x55cc66,0,1,0],[0x4488ee,0,0,1]].forEach(([c,x,y,z])=>{const m=new THREE.MeshBasicMaterial({color:c});const q=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.8,8),m);q.position.set(x*.4,y*.4,z*.4);if(x)q.rotation.z=-Math.PI/2;if(z)q.rotation.x=Math.PI/2;g.add(q)});return g}
 export function attachGizmo(scene,obj){const g=makeGizmo();g.position.copy(obj.position);scene.add(g);return g}
+export class SelectionController{
+ constructor(editor,el){this.e=editor;this.el=el;this.ray=new THREE.Raycaster();this.mouse=new THREE.Vector2();el.addEventListener('pointerdown',ev=>{if(ev.button!==0)return;const r=el.getBoundingClientRect();this.mouse.x=((ev.clientX-r.left)/r.width)*2-1;this.mouse.y=-((ev.clientY-r.top)/r.height)*2+1;this.ray.setFromCamera(this.mouse,editor.camera);const hits=this.ray.intersectObjects(editor.sceneController.objects,false);if(hits.length){editor.selectObject(hits[0].object);editor.pushUndo()}})}
+}
