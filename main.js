@@ -1,0 +1,31 @@
+import * as THREE from 'three';
+import {Editor} from './editor.js';
+import {SceneController} from './scene.js';
+import {UIController} from './ui.js';
+import {InputController} from './input.js';
+import {IOController} from './io.js';
+
+const viewport=document.getElementById('viewport');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(viewport.clientWidth,viewport.clientHeight); renderer.setClearColor(0x121419);
+renderer.shadowMap.enabled=true; viewport.appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x121419);
+const camera=new THREE.PerspectiveCamera(55,viewport.clientWidth/viewport.clientHeight,.05,2000); camera.position.set(7,5,8);
+const editor=new Editor(scene,camera,renderer);
+const sceneController=new SceneController(scene,editor);
+const io=new IOController(editor,sceneController);
+const ui=new UIController(editor,sceneController,io);
+const input=new InputController(editor,viewport);
+editor.sceneController=sceneController; editor.ui=ui;
+
+const hemi=new THREE.HemisphereLight(0xb8c7dd,0x252832,2.2); scene.add(hemi);
+const key=new THREE.DirectionalLight(0xffffff,3.2); key.position.set(5,10,6); key.castShadow=true; scene.add(key);
+const fill=new THREE.DirectionalLight(0x8aaaff,1.1); fill.position.set(-6,4,-4); scene.add(fill);
+const grid=new THREE.GridHelper(40,40,0x41444b,0x282b31); grid.position.y=-0.001; scene.add(grid);
+const axes=new THREE.AxesHelper(2.5); scene.add(axes);
+sceneController.addCube('Cube'); editor.selectObject(sceneController.objects[0]);
+
+function resize(){const w=viewport.clientWidth,h=viewport.clientHeight; camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setSize(w,h)}
+new ResizeObserver(resize).observe(viewport);
+function frame(t){requestAnimationFrame(frame); editor.update(t); renderer.render(scene,camera)} requestAnimationFrame(frame);
+window.editor=editor; window.sceneController=sceneController;
