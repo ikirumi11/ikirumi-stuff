@@ -1,1 +1,0 @@
-export const state={meshes:[],active:null,vars:{}};export function stats(){return{objects:state.meshes.length,faces:state.meshes.reduce((n,m)=>n+m.faces.length,0),vertices:state.meshes.reduce((n,m)=>n+m.vertices.length,0)}}
