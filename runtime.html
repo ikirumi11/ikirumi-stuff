@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MeshForge Local Runtime</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b0d11;color:#e8ebf0;font-family:Arial,sans-serif}#loader{position:fixed;inset:0;display:flex;flex-direction:column;background:#0b0d11;z-index:10}.head{padding:18px 22px;border-bottom:1px solid #252a33;background:#11141a}.head b{font-size:18px}.head small{display:block;color:#7f8794;margin-top:5px}.progress{height:6px;background:#20242c}.bar{height:100%;width:0;background:#6da5ff;transition:width .15s}.status{padding:12px 22px;color:#aeb6c3}.files{flex:1;overflow:auto;padding:10px 22px}.file{padding:7px 0;border-bottom:1px solid #171a20;font:13px monospace}.ok{color:#79d89b}.bad{color:#ff7777}.loading{color:#e4c76b}.log{height:110px;overflow:auto;padding:10px 22px;border-top:1px solid #252a33;background:#080a0d;color:#89919d;font:12px monospace}#runtime{position:fixed;inset:0;width:100%;height:100%;border:0;display:none;background:#fff}
+</style>
+</head>
+<body>
+<div id="loader">
+ <div class="head"><b>MeshForge Local Runtime</b><small id="repo">Loading GitHub repository…</small></div>
+ <div class="progress"><div id="bar" class="bar"></div></div>
+ <div id="status" class="status">Preparing…</div>
+ <div id="files" class="files"></div>
+ <div id="log" class="log"></div>
+</div>
+<iframe id="runtime" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-downloads"></iframe>
+<script>
+const OWNER='ikirumi11';
+const REPO='ikirumi-stuff';
+const BRANCH='main';
+const API=`https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${encodeURIComponent(BRANCH)}?recursive=1`;
+const RAW=`https://raw.githubusercontent.com/${OWNER}/${REPO}/${encodeURIComponent(BRANCH)}/`;
+const $=id=>document.getElementById(id);
+const files=new Map();
+const decoder=new TextDecoder();
+function log(s){const d=document.createElement('div');d.textContent='['+new Date().toLocaleTimeString()+'] '+s;$('log').appendChild(d);$('log').scrollTop=$('log').scrollHeight}
+function progress(n,total){$('bar').style.width=(total?100*n/total:0)+'%'}
+function clean(p){return p.replace(/^\.\//,'').replace(/\\/g,'/').replace(/\/+/g,'/')}
+function dir(p){p=clean(p);const i=p.lastIndexOf('/');return i<0?'':p.slice(0,i)}
+function resolve(from,to){if(!to)return to;if(/^(?:[a-z]+:|\/\/|#|data:|blob:)/i.test(to))return to;const parts=((dir(from)?dir(from)+'/':'')+to).split('/');const out=[];for(const p of parts){if(!p||p==='.')continue;if(p==='..')out.pop();else out.push(p)}return out.join('/')}
+function type(p){const x=p.toLowerCase();if(x.endsWith('.css'))return'text/css';if(x.endsWith('.js'))return'text/javascript';if(x.endsWith('.html'))return'text/html';if(x.endsWith('.json'))return'application/json';if(x.endsWith('.svg'))return'image/svg+xml';if(x.endsWith('.png'))return'image/png';if(x.endsWith('.jpg')||x.endsWith('.jpeg'))return'image/jpeg';if(x.endsWith('.webp'))return'image/webp';if(x.endsWith('.gif'))return'image/gif';if(x.endsWith('.mp3'))return'audio/mpeg';if(x.endsWith('.wav'))return'audio/wav';if(x.endsWith('.ogg'))return'audio/ogg';if(x.endsWith('.mp4'))return'video/mp4';if(x.endsWith('.webm'))return'video/webm';return'application/octet-stream'}
+function get(path){path=clean(path);return files.get(path)||files.get(decodeURIComponent(path))||null}
+function local(from,target){if(!target)return target;if(/^(?:[a-z]+:|\/\/|#|data:|blob:)/i.test(target))return target;const f=get(resolve(from,target));return f?f.url:target}
+function rewriteCSS(css,path){return css.replace(/url\(\s*(['"]?)(.*?)\1\s*\)/gi,(m,q,u)=>'url("'+local(path,u)+'")')}
+function escapeScript(s){return s.replace(/<\/script/gi,'<\\/script')}
+function build(html,path){const doc=new DOMParser().parseFromString(html,'text/html');
+ for(const link of [...doc.querySelectorAll('link[rel="stylesheet"][href]')]){const f=get(resolve(path,link.getAttribute('href')));if(f){const st=doc.createElement('style');st.textContent=rewriteCSS(decoder.decode(f.buffer),f.path);link.replaceWith(st)}}
+ for(const script of [...doc.querySelectorAll('script[src]')]){const f=get(resolve(path,script.getAttribute('src')));if(!f)continue;const st=doc.createElement('script');if(script.type)st.type=script.type;st.textContent=escapeScript(decoder.decode(f.buffer));script.replaceWith(st)}
+ for(const el of [...doc.querySelectorAll('[src],[poster],[href]')]){const a=el.hasAttribute('src')?'src':el.hasAttribute('poster')?'poster':'href';const v=el.getAttribute(a);if(!v||a==='href'&&el.tagName==='LINK')continue;const n=local(path,v);if(n!==v)el.setAttribute(a,n)}
+ for(const el of [...doc.querySelectorAll('[style]')])el.setAttribute('style',rewriteCSS(el.getAttribute('style'),path));
+ for(const st of [...doc.querySelectorAll('style')])st.textContent=rewriteCSS(st.textContent,path);
+ const boot=doc.createElement('script');boot.textContent=escapeScript(`window.__MESHFORGE_LOCAL_RUNTIME__=true;window.addEventListener('error',e=>parent.postMessage({type:'runtime-error',message:e.message||'Runtime error',file:e.filename||'',line:e.lineno||0},'*'));window.addEventListener('unhandledrejection',e=>parent.postMessage({type:'runtime-error',message:String(e.reason||'Unhandled promise rejection')},'*'));`);doc.body.appendChild(boot);
+ return '<!doctype html>\n'+doc.documentElement.outerHTML}
+async function start(){try{$('repo').textContent=OWNER+'/'+REPO+' • '+BRANCH;const tr=await fetch(API,{headers:{Accept:'application/vnd.github+json'}});if(!tr.ok)throw Error('GitHub tree HTTP '+tr.status);const tree=await tr.json();const blobs=(tree.tree||[]).filter(x=>x.type==='blob');if(!blobs.length)throw Error('No files found');$('status').textContent='Downloading '+blobs.length+' files…';let n=0;for(const item of blobs){const p=clean(item.path);const row=document.createElement('div');row.className='file loading';row.textContent='⏳ '+p;$('files').appendChild(row);const r=await fetch(RAW+p.split('/').map(encodeURIComponent).join('/'));if(!r.ok){row.className='file bad';row.textContent='✕ '+p+' — HTTP '+r.status;throw Error('Could not download '+p)}const buffer=await r.arrayBuffer();files.set(p,{path:p,buffer,url:null});row.className='file ok';row.textContent='✓ '+p;n++;progress(n,blobs.length);$('status').textContent='Downloaded '+n+'/'+blobs.length+' files'}
+ for(const f of files.values())f.url=URL.createObjectURL(new Blob([f.buffer],{type:type(f.path)}));
+ const index=get('index.html');if(!index)throw Error('index.html is missing');$('status').textContent='Building site…';const html=build(decoder.decode(index.buffer),'index.html');window.addEventListener('message',e=>{if(e.data&&e.data.type==='runtime-error'){log('ERROR: '+e.data.message+(e.data.file?' • '+e.data.file:'')+(e.data.line?':'+e.data.line:''))}});$('runtime').onload=()=>{log('Site started successfully');$('status').textContent='Ready';setTimeout(()=>{$('loader').style.display='none';$('runtime').style.display='block'},150)};$('runtime').srcdoc=html}catch(e){$('status').textContent='Runtime failed: '+e.message;log('FATAL: '+e.stack);}}
+start();
+</script>
+</body>
+</html>
