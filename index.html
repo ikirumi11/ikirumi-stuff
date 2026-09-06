@@ -5,46 +5,44 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Blank Book Gallery</title>
 <style>
+:root{--bg:#f3f0e8;--text:#25221d;--muted:#777064;--panel:#fff;--line:#d8d1c3;--button:#fffaf1}
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;font-family:Georgia,'Times New Roman',serif;background:#f3f0e8;color:#25221d}
+html,body{margin:0;min-height:100%;font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--text);transition:background .2s,color .2s}
 body{padding:32px}
-header{max-width:1200px;margin:0 auto 32px;text-align:center}
+body.dark{--bg:#101114;--text:#f1eee7;--muted:#aaa59a;--panel:#191a1e;--line:#34353b;--button:#202126}
+header{max-width:1200px;margin:0 auto 32px;text-align:center;position:relative}
 h1{font-size:42px;font-weight:400;margin:0 0 8px;letter-spacing:.5px}
-p{margin:0;color:#777064;font-family:Arial,sans-serif}
-.gallery{max-width:1200px;margin:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:28px}
-.book{aspect-ratio:3/4;background:#fff;border:1px solid #d8d1c3;border-radius:4px 10px 10px 4px;box-shadow:8px 8px 0 #ddd6c9,0 8px 22px #0001;position:relative;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s}
-.book:hover{transform:translateY(-6px) rotate(-1deg);box-shadow:11px 14px 0 #d7d0c3,0 14px 28px #0002}
-.book:before{content:'';position:absolute;left:18px;top:0;bottom:0;width:2px;background:#eee8dc;box-shadow:5px 0 #faf7f0}
-.cover{position:absolute;inset:0;padding:28px 25px 25px 32px;display:flex;flex-direction:column;justify-content:space-between}
-.blank{flex:1;border:1px dashed #e5dfd4;margin:8px 0 18px;background:linear-gradient(transparent 31px,#eee9df 32px);background-size:100% 32px}
-.label{font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#aaa296}
-.title{font-size:20px;color:#8c8477}
-button{display:block;margin:28px auto 0;padding:11px 20px;border:1px solid #cbc3b5;background:#fffaf1;border-radius:8px;font-family:Arial,sans-serif;color:#625c52;cursor:pointer}
-button:hover{background:#fff}
-@media(max-width:600px){body{padding:20px}h1{font-size:32px}.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.book{box-shadow:5px 5px 0 #ddd6c9}}
+p{margin:0;color:var(--muted);font-family:Arial,sans-serif}
+.theme{position:absolute;right:0;top:0;margin:0;padding:10px 14px;border:1px solid var(--line);background:var(--button);color:var(--text);border-radius:9px;font-family:Arial,sans-serif;cursor:pointer}
+.gallery{max-width:1200px;margin:auto;min-height:55vh;display:flex;align-items:center;justify-content:center}
+.empty{text-align:center;color:var(--muted);font-family:Arial,sans-serif}
+.emptyIcon{font-size:54px;opacity:.45;margin-bottom:12px}
+.empty h2{font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:var(--text);margin:0 0 7px}
+.empty p{font-size:14px}
+@media(max-width:600px){body{padding:20px}h1{font-size:32px;padding-top:42px}.theme{top:0;right:50%;transform:translateX(50%)}.gallery{min-height:65vh}}
 </style>
 </head>
 <body>
 <header>
+<button class="theme" id="theme" aria-label="Toggle dark mode">🌙 Dark mode</button>
 <h1>Blank Book Gallery</h1>
-<p>A simple gallery of blank books.</p>
+<p>A simple gallery for your books.</p>
 </header>
-<main class="gallery" id="gallery"></main>
-<button id="add">Add Blank Book</button>
+<main class="gallery">
+<section class="empty">
+<div class="emptyIcon">📖</div>
+<h2>No books yet</h2>
+<p>Your book gallery is empty.</p>
+</section>
+</main>
 <script>
-const gallery=document.getElementById('gallery');
-let books=Number(localStorage.getItem('blankBookCount')||12);
-function render(){
- gallery.innerHTML='';
- for(let i=1;i<=books;i++){
-  const book=document.createElement('article');
-  book.className='book';
-  book.innerHTML='<div class="cover"><div class="label">Blank Book '+i+'</div><div class="blank"></div><div class="title">Untitled</div></div>';
-  gallery.appendChild(book);
- }
-}
-document.getElementById('add').onclick=()=>{books++;localStorage.setItem('blankBookCount',books);render()};
-render();
+const body=document.body;
+const theme=document.getElementById('theme');
+const saved=localStorage.getItem('blankBookDarkMode');
+if(saved==='true')body.classList.add('dark');
+function updateThemeButton(){theme.textContent=body.classList.contains('dark')?'☀️ Light mode':'🌙 Dark mode'}
+theme.onclick=()=>{body.classList.toggle('dark');localStorage.setItem('blankBookDarkMode',body.classList.contains('dark'));updateThemeButton()};
+updateThemeButton();
 </script>
 </body>
 </html>
