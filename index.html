@@ -14,7 +14,7 @@
   <h1>Ikirumi Drive</h1>
   <p>Your Google Drive media library — organized like separate Photos, Videos and Audio apps instead of showing every file together.</p>
   <button id="login" class="login">Sign in with Google Drive</button>
-  <p id="loginHelp" class="small">This app uses Google Drive access. Your files stay in your Google Drive; this page only requests access needed to display them.</p>
+  <p id="loginHelp" class="small">Signing in automatically when Google allows it. Your files stay in your Google Drive; this page only requests access needed to display them.</p>
 </div>
 <div id="app" class="app hidden">
   <aside class="sidebar">
@@ -38,64 +38,22 @@
 </div>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-/*
-  SETUP:
-  1. In Google Cloud Console create/select a project.
-  2. Enable Google Drive API.
-  3. Create an OAuth 2.0 Web application client ID.
-  4. Add your GitHub Pages/Vercel URL to Authorized JavaScript origins.
-  5. Paste the client ID below.
-  The client ID is public browser configuration; never put a client secret in this file.
-*/
 const CLIENT_ID='PASTE_YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com';
 const SCOPES='https://www.googleapis.com/auth/drive.readonly';
-let token=null,currentType='photos',allFiles=[],nextPageToken=null;
+let token=null,currentType='photos',allFiles=[];
 const $=id=>document.getElementById(id);
-const mime={photos:['image/'],videos:['video/'],audio:['audio/'],documents:['application/pdf','text/','application/vnd.google-apps.document','application/vnd.google-apps.spreadsheet','application/vnd.google-apps.presentation'],all:[]};
 function setStatus(t){$('status').textContent=t}
-function categoryOf(f){let m=f.mimeType||'';if(m.startsWith('image/'))return'photos';if(m.startsWith('video/'))return'videos';if(m.startsWith('audio/'))return'audio';if(m.startsWith('application/vnd.google-apps.folder'))return'folders';return'documents'}
+function categoryOf(f){let m=f.mimeType||'';if(m.startsWith('image/'))return'photos';if(m.startsWith('video/'))return'videos';if(m.startsWith('audio/'))return'audio';if(m==='application/vnd.google-apps.folder')return'folders';return'documents'}
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function driveFetch(url){return fetch(url,{headers:{Authorization:'Bearer '+token}}).then(async r=>{if(!r.ok)throw new Error(await r.text());return r.json()})}
-async function load(){
-  if(!token)return;setStatus('Loading your Google Drive…');allFiles=[];nextPageToken=null;
-  try{
-    let q="trashed = false";
-    const data=await driveFetch('https://www.googleapis.com/drive/v3/files?'+new URLSearchParams({q,fields:'nextPageToken,files(id,name,mimeType,thumbnailLink,webContentLink,modifiedTime,size,parents)',pageSize:'1000',orderBy:'modifiedTime desc'}));
-    allFiles=data.files||[];render();setStatus(`${allFiles.length} supported Drive items loaded`);
-  }catch(e){setStatus('Drive access failed. Please sign in again.');console.error(e)}
-}
-function render(){
-  const term=$('search').value.trim().toLowerCase();
-  let files=allFiles.filter(f=>currentType==='all'||categoryOf(f)===currentType);
-  if(currentType==='folders')files=allFiles.filter(f=>f.mimeType==='application/vnd.google-apps.folder');
-  if(term)files=files.filter(f=>f.name.toLowerCase().includes(term));
-  $('pageTitle').textContent={photos:'Photos',videos:'Videos',audio:'Audio',documents:'Documents',folders:'Folders',all:'All supported'}[currentType];
-  $('folder').classList.add('hidden');$('grid').innerHTML='';
-  if(!files.length){$('grid').innerHTML='<div class="empty">No items found here.<br><span class="small">Upload them to Google Drive and press Refresh.</span></div>';return}
-  for(const f of files){
-    const c=document.createElement('div');c.className='card';
-    const cat=categoryOf(f);let media='';
-    if(cat==='photos'&&f.thumbnailLink)media=`<img loading="lazy" src="${escapeHtml(f.thumbnailLink)}" alt="">`;
-    else if(cat==='videos')media='<div style="font-size:52px">▶</div>';
-    else if(cat==='audio')media='<div class="audioThumb">♫</div>';
-    else if(cat==='folders')media='<div style="font-size:52px">▱</div>';
-    else media='<div style="font-size:52px">▤</div>';
-    c.innerHTML=`<div class="thumb">${media}</div><div class="meta"><div class="name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div><div class="small">${cat} · ${f.size?formatBytes(f.size):'Google file'}</div></div>`;
-    c.onclick=()=>openFile(f);$('grid').appendChild(c);
-  }
-}
+async function load(){if(!token)return;setStatus('Loading your Google Drive…');allFiles=[];try{let q='trashed = false';const data=await driveFetch('https://www.googleapis.com/drive/v3/files?'+new URLSearchParams({q,fields:'nextPageToken,files(id,name,mimeType,thumbnailLink,webContentLink,modifiedTime,size,parents)',pageSize:'1000',orderBy:'modifiedTime desc'}));allFiles=data.files||[];render();setStatus(`${allFiles.length} supported Drive items loaded`)}catch(e){setStatus('Drive access failed. Please sign in again.');console.error(e)}}
+function render(){const term=$('search').value.trim().toLowerCase();let files=allFiles.filter(f=>currentType==='all'||categoryOf(f)===currentType);if(currentType==='folders')files=allFiles.filter(f=>f.mimeType==='application/vnd.google-apps.folder');if(term)files=files.filter(f=>f.name.toLowerCase().includes(term));$('pageTitle').textContent={photos:'Photos',videos:'Videos',audio:'Audio',documents:'Documents',folders:'Folders',all:'All supported'}[currentType];$('folder').classList.add('hidden');$('grid').innerHTML='';if(!files.length){$('grid').innerHTML='<div class="empty">No items found here.<br><span class="small">Upload them to Google Drive and press Refresh.</span></div>';return}for(const f of files){const c=document.createElement('div');c.className='card';const cat=categoryOf(f);let media='';if(cat==='photos'&&f.thumbnailLink)media=`<img loading="lazy" src="${escapeHtml(f.thumbnailLink)}" alt="">`;else if(cat==='videos')media='<div style="font-size:52px">▶</div>';else if(cat==='audio')media='<div class="audioThumb">♫</div>';else if(cat==='folders')media='<div style="font-size:52px">▱</div>';else media='<div style="font-size:52px">▤</div>';c.innerHTML=`<div class="thumb">${media}</div><div class="meta"><div class="name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div><div class="small">${cat} · ${f.size?formatBytes(f.size):'Google file'}</div></div>`;c.onclick=()=>openFile(f);$('grid').appendChild(c)}}
 function formatBytes(n){n=Number(n);if(!n)return'';const u=['B','KB','MB','GB','TB'];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++}return n.toFixed(n>=100?0:n>=10?1:2)+' '+u[i]}
-function openFile(f){
-  if(f.webContentLink)window.open(f.webContentLink,'_blank','noopener');
-  else window.open('https://drive.google.com/open?id='+encodeURIComponent(f.id),'_blank','noopener');
-}
-function startAuth(){
-  if(CLIENT_ID.startsWith('PASTE_')){alert('Open index.html and paste your Google OAuth Web Client ID into CLIENT_ID first.');return}
-  const client=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:(r)=>{if(r.error){setStatus('Google sign-in was cancelled or failed.');return}token=r.access_token;localStorage.setItem('ikirumi_drive_signed_in','1');$('signin').classList.add('hidden');$('app').classList.remove('hidden');load()}});client.requestAccessToken({prompt:''});
-}
-$('login').onclick=startAuth;$('logout').onclick=()=>{token=null;localStorage.removeItem('ikirumi_drive_signed_in');$('app').classList.add('hidden');$('signin').classList.remove('hidden')};$('refresh').onclick=load;$('search').oninput=render;
-document.querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>{currentType=b.dataset.type;document.querySelectorAll('[data-type]').forEach(x=>x.classList.toggle('active',x.dataset.type===currentType));render()});
-window.addEventListener('load',()=>{setStatus('Ready. Sign in to connect your Google Drive.')});
+function openFile(f){if(f.webContentLink)window.open(f.webContentLink,'_blank','noopener');else window.open('https://drive.google.com/open?id='+encodeURIComponent(f.id),'_blank','noopener')}
+function waitForGoogle(){return new Promise((resolve,reject)=>{const start=Date.now();(function check(){if(window.google?.accounts?.oauth2){resolve();return}if(Date.now()-start>15000){reject(new Error('Google Identity Services failed to load.'));return}setTimeout(check,100)})()})}
+async function startAuth(){if(CLIENT_ID.startsWith('PASTE_')){setStatus('Google OAuth Client ID is not configured.');$('loginHelp').textContent='Add your Google OAuth Web Client ID to CLIENT_ID. After that, sign-in starts automatically — no button press needed.';return}try{setStatus('Signing in to Google Drive automatically…');await waitForGoogle();const client=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:(r)=>{if(r.error){setStatus('Google sign-in needs permission or was cancelled.');console.error(r);return}token=r.access_token;localStorage.setItem('ikirumi_drive_signed_in','1');$('signin').classList.add('hidden');$('app').classList.remove('hidden');load()}});client.requestAccessToken({prompt:''})}catch(e){setStatus('Could not start Google sign-in.');console.error(e)}}
+$('login').onclick=startAuth;$('logout').onclick=()=>{token=null;localStorage.removeItem('ikirumi_drive_signed_in');$('app').classList.add('hidden');$('signin').classList.remove('hidden');setStatus('Signed out.')};$('refresh').onclick=load;$('search').oninput=render;document.querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>{currentType=b.dataset.type;document.querySelectorAll('[data-type]').forEach(x=>x.classList.toggle('active',x.dataset.type===currentType));render()});
+window.addEventListener('load',()=>{setStatus('Starting automatic Google Drive sign-in…');setTimeout(startAuth,300)});
 </script>
 </body>
 </html>
