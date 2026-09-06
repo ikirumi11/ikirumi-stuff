@@ -1,48 +1,67 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Books</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ikirumi Books</title>
 <style>
-:root{--bg:#f3f0e8;--text:#25221d;--muted:#777064;--panel:#fff;--line:#d8d1c3;--button:#fffaf1}
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--text);transition:background .2s,color .2s}
-body{padding:32px}
-body.dark{--bg:#101114;--text:#f1eee7;--muted:#aaa59a;--panel:#191a1e;--line:#34353b;--button:#202126}
-header{max-width:1200px;margin:0 auto 32px;text-align:center;position:relative}
-h1{font-size:42px;font-weight:400;margin:0 0 8px;letter-spacing:.5px}
-p{margin:0;color:var(--muted);font-family:Arial,sans-serif}
-.theme{position:absolute;right:0;top:0;margin:0;padding:10px 14px;border:1px solid var(--line);background:var(--button);color:var(--text);border-radius:9px;font-family:Arial,sans-serif;cursor:pointer}
-.gallery{max-width:1200px;margin:auto;min-height:55vh;display:flex;align-items:center;justify-content:center}
-.empty{text-align:center;color:var(--muted);font-family:Arial,sans-serif}
-.emptyIcon{font-size:54px;opacity:.45;margin-bottom:12px}
-.empty h2{font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:var(--text);margin:0 0 7px}
-.empty p{font-size:14px}
-@media(max-width:600px){body{padding:20px}h1{font-size:32px;padding-top:42px}.theme{top:0;right:50%;transform:translateX(50%)}.gallery{min-height:65vh}}
+html,body{margin:0;width:100%;height:100%;background:#07080b;color:#fff;font-family:Inter,Arial,sans-serif}
+body{overflow:hidden}
+#app{width:100%;height:100%;display:flex;flex-direction:column}
+.topbar{height:68px;min-height:68px;display:flex;align-items:center;gap:18px;padding:0 22px;background:rgba(13,15,20,.88);border-bottom:1px solid rgba(255,255,255,.08);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);position:relative;z-index:20}
+.logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+.logo-dot{width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 18px rgba(255,255,255,.7)}
+.nav{display:flex;align-items:center;gap:6px;margin-left:auto}
+.nav button{border:0;color:#fff;background:rgba(255,255,255,.1);padding:10px 15px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.content{position:relative;flex:1;min-height:0;background:#050608}
+#books{width:100%;height:100%;border:0;display:block;background:#050608}
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#07080b;z-index:100;transition:opacity .35s}
+.loader{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:#fff;animation:spin .8s linear infinite}
+.loading-text{margin-top:18px;color:#777f8c;font-size:13px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:650px){.topbar{padding:0 12px}.logo{font-size:17px}.nav button{padding:9px 10px}}
 </style>
 </head>
 <body>
-<header>
-<button class="theme" id="theme" aria-label="Toggle dark mode">🌙 Dark mode</button>
-<h1>Books</h1>
-<p>Your book gallery.</p>
+<div id="app">
+<header class="topbar">
+<div class="logo"><span class="logo-dot"></span>Ikirumi</div>
+<nav class="nav"><button class="active" type="button">Books</button></nav>
 </header>
-<main class="gallery">
-<section class="empty">
-<div class="emptyIcon">📖</div>
-<h2>No books yet</h2>
-<p>Your book gallery is empty.</p>
-</section>
+<main class="content">
+<iframe id="books" title="Ikirumi Books" src="about:blank"></iframe>
 </main>
+</div>
+<div id="loading">
+<div class="loader"></div>
+<div class="loading-text">Loading Books...</div>
+</div>
 <script>
-const body=document.body;
-const theme=document.getElementById('theme');
-const saved=localStorage.getItem('blankBookDarkMode');
-if(saved==='true')body.classList.add('dark');
-function updateThemeButton(){theme.textContent=body.classList.contains('dark')?'☀️ Light mode':'🌙 Dark mode'}
-theme.onclick=()=>{body.classList.toggle('dark');localStorage.setItem('blankBookDarkMode',body.classList.contains('dark'));updateThemeButton()};
-updateThemeButton();
+const BOOKS_URL="https://raw.githubusercontent.com/ikirumi11/ikirumi-stuff/main/books.html";
+async function loadBooks(){
+ try{
+  const response=await fetch(BOOKS_URL+"?refresh="+Date.now(),{cache:"no-store"});
+  if(!response.ok)throw new Error("GitHub returned "+response.status);
+  let html=await response.text();
+  const base='<base href="https://raw.githubusercontent.com/ikirumi11/ikirumi-stuff/main/">';
+  if(/<head\b[^>]*>/i.test(html))html=html.replace(/<head\b([^>]*)>/i,'<head$1>'+base);
+  else html='<!DOCTYPE html><html><head>'+base+'</head><body>'+html+'</body></html>';
+  const frame=document.getElementById("books");
+  frame.srcdoc=html;
+  frame.onload=()=>{
+   const loading=document.getElementById("loading");
+   loading.style.opacity="0";
+   setTimeout(()=>loading.remove(),400);
+  };
+ }catch(error){
+  console.error(error);
+  const loading=document.getElementById("loading");
+  loading.querySelector(".loading-text").textContent="Could not load Books";
+  setTimeout(()=>{loading.style.opacity="0";setTimeout(()=>loading.remove(),400)},700);
+ }
+}
+loadBooks();
 </script>
 </body>
 </html>
