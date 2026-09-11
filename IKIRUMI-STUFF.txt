@@ -1,0 +1,16 @@
+IKIRUMI STUFF CONTAINER
+
+This repository is a container for Ikirumi Stuff sites.
+
+Structure:
+Root/
+├── site1/
+│   └── files for Site 1
+├── site2/
+│   └── files for Site 2
+└── site3/
+    └── files for Site 3
+
+Each site has its own folder directly in the root. All files belonging to Site 1 go inside Root/site1/ (the site1 folder in this repository), all files belonging to Site 2 go inside Root/site2/, and so on.
+
+The root is kept clean and is used for the site folders and this container description file.
