@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Peer to Peer Drawing</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+<header>
+<h1>Peer to Peer Drawing</h1>
+<span id="status">Disconnected</span>
+</header>
+<details class="mobile-panel" open>
+<summary>Room & connection</summary>
+<section class="connect">
+<input id="room" placeholder="Room name" autocomplete="off">
+<button id="join">Join room</button>
+<button id="copy">Copy link</button>
+</section>
+</details>
+<details class="mobile-panel" open>
+<summary>Drawing tools</summary>
+<section class="tools">
+<label class="color-wrap">Color <input id="color" type="color" value="#000000"></label>
+<label>Size <input id="size" type="range" min="1" max="60" value="8"><b id="sizeValue">8</b></label>
+<button id="pen" class="active">Pen</button>
+<button id="eraser">Eraser</button>
+<button id="undo">Undo</button>
+<button id="clear" class="danger">Clear</button>
+</section>
+</details>
+<main><canvas id="canvas"></canvas></main>
+<footer>
+<span id="peers">0 peers</span>
+<span class="sync-info">Only canvas strokes are synchronized.</span>
+</footer>
+</div>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
