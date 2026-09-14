@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ta Lys Trener – Bilcross</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif;color:#fff}body{display:flex;align-items:center;justify-content:center;user-select:none;cursor:pointer}.app{text-align:center;width:100%;padding:20px;box-sizing:border-box}.light{font-size:clamp(60px,12vw,150px);font-weight:900;line-height:1;margin-bottom:25px}.ready{color:#ffd400}.go{color:#19ff57}.status{font-size:clamp(22px,4vw,42px);font-weight:800}.time{font-size:clamp(28px,6vw,70px);font-weight:900;margin-top:18px}.best{font-size:18px;margin-top:12px;color:#aaa}.button{display:inline-block;margin-top:30px;padding:16px 30px;border:2px solid #ffd400;color:#ffd400;font-size:20px;font-weight:800;border-radius:10px;cursor:pointer}.button:hover{background:#ffd400;color:#000}.hidden{display:none}</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div id="light" class="light ready">READY TO RACE</div>
+  <div id="status" class="status">Klikk eller trykk SPACE for å starte</div>
+  <div id="time" class="time"></div>
+  <div id="best" class="best"></div>
+  <div id="button" class="button">START</div>
+</div>
+<script>
+let state='idle';
+let startTime=0;
+let timer=null;
+let bestTime=null;
+const light=document.getElementById('light');
+const status=document.getElementById('status');
+const time=document.getElementById('time');
+const best=document.getElementById('best');
+const button=document.getElementById('button');
+
+function resetUI(){
+  state='idle';
+  clearTimeout(timer);
+  light.className='light ready';
+  light.textContent='READY TO RACE';
+  status.textContent='Klikk eller trykk SPACE for å starte';
+  time.textContent='';
+  button.classList.remove('hidden');
+}
+
+function start(){
+  if(state!=='idle') return;
+  state='waiting';
+  button.classList.add('hidden');
+  light.className='light ready';
+  light.textContent='READY';
+  status.textContent='Vent på grønt...';
+  time.textContent='';
+  const delay=500+Math.random()*9500;
+  timer=setTimeout(()=>{
+    state='go';
+    light.className='light go';
+    light.textContent='GO!';
+    status.textContent='KLIKK NÅ!';
+    startTime=performance.now();
+  },delay);
+}
+
+function react(){
+  if(state!=='go') return;
+  const reaction=performance.now()-startTime;
+  state='result';
+  const ms=Math.round(reaction);
+  time.textContent=ms+' ms';
+  if(reaction<80) status.textContent='CHEATER?';
+  else if(reaction<100) status.textContent='EKSTREMT RASK';
+  else if(reaction<150) status.textContent='VELDIG RASK';
+  else if(reaction<200) status.textContent='BRA START';
+  else if(reaction<300) status.textContent='OK START';
+  else if(reaction<400) status.textContent='MIDDELS – TAR IKKE STARTEN';
+  else if(reaction<500) status.textContent='SEN START';
+  else status.textContent='FOR SEN';
+  if(bestTime===null || reaction<bestTime) bestTime=reaction;
+  best.textContent='Beste: '+Math.round(bestTime)+' ms';
+  button.textContent='PRØV IGJEN';
+  button.classList.remove('hidden');
+}
+
+button.addEventListener('click',e=>{e.stopPropagation(); state==='idle'?start():resetUI()});
+document.body.addEventListener('click',()=>{if(state==='go') react()});
+document.addEventListener('keydown',e=>{
+  if(e.code!=='Space') return;
+  e.preventDefault();
+  if(state==='idle') start();
+  else if(state==='go') react();
+});
+resetUI();
+</script>
+</body>
+</html>
