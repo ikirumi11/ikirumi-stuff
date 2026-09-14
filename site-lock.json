@@ -1,0 +1,8 @@
+{
+  "password": "CHANGE_THIS_PASSWORD",
+  "sites": {
+    "site1": false,
+    "site2": false,
+    "site3": false
+  }
+}
