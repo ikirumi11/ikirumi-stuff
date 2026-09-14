@@ -2,15 +2,22 @@ IKIRUMI STUFF CONTAINER
 
 This repository is a container for Ikirumi Stuff sites.
 
-Structure:
+Site folders can use either numbered names or custom names:
+
 Root/
 ├── site1/
 │   └── files for Site 1
 ├── site2/
 │   └── files for Site 2
-└── site3/
-    └── files for Site 3
+└── MySite/
+    └── files for a named site
 
-Each site has its own folder directly in the root. All files belonging to Site 1 go inside Root/site1/ (the site1 folder in this repository), all files belonging to Site 2 go inside Root/site2/, and so on.
+Numbered folders such as site1 and site2 automatically display as Site 1 and Site 2.
+Named folders can display a custom name using site-names.json. For example:
 
-The root is kept clean and is used for the site folders and this container description file.
+{
+  "MySite": "My Cool Site"
+}
+
+Each site folder must contain its own index.html to be considered ready to open.
+The root is kept clean and is used for the site folders and container configuration files.
