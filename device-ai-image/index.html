@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#090b10">
 <title>Device AI Image</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#090b10;color:#f4f7fb;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:16px}.wrap{width:min(1100px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}.brand h1{font-size:clamp(25px,5vw,40px);margin:0}.brand p{margin:5px 0 0;color:#8f99a9;font-size:13px}.pill{border:1px solid #303744;background:#11151d;padding:8px 11px;border-radius:999px;color:#aeb8c7;font-size:12px;white-space:nowrap}.grid{display:grid;grid-template-columns:360px 1fr;gap:16px}.panel{border:1px solid #292f39;background:#10141b;border-radius:18px;padding:18px}.panel h2{font-size:16px;margin:0 0 14px}.label{display:block;font-size:12px;color:#a4adba;margin:13px 0 7px}textarea,input,select{width:100%;border:1px solid #333b48;background:#0a0e14;color:#fff;border-radius:11px;padding:11px;font:inherit;outline:none}textarea{min-height:115px;resize:vertical}textarea:focus,input:focus,select:focus{border-color:#596678}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.device{margin-top:14px;padding:12px;border:1px solid #303744;border-radius:12px;background:#0c1016}.device strong{display:block;font-size:13px}.device span{display:block;color:#8791a0;font-size:11px;line-height:1.5;margin-top:4px}.actions{display:flex;gap:9px;margin-top:15px}.btn{flex:1;border:1px solid #394250;background:#1a202a;color:#fff;border-radius:11px;padding:12px;font-weight:750;cursor:pointer}.btn.primary{background:#dce6f2;color:#0b0e13;border-color:#dce6f2}.btn:disabled{opacity:.45;cursor:not-allowed}.note{margin-top:12px;color:#788392;font-size:11px;line-height:1.5}.stage{min-height:560px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}.empty{text-align:center;color:#727d8d;padding:40px}.empty b{display:block;color:#aeb8c7;margin-bottom:7px}.result{max-width:100%;max-height:72vh;width:auto;height:auto;border-radius:13px;display:block}.progress{position:absolute;left:18px;right:18px;bottom:18px;display:none}.progress.show{display:block}.bar{height:7px;background:#252c37;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:#dce6f2;transition:width .25s}.progress p{margin:7px 0 0;font-size:11px;color:#909aaa}.small{font-size:11px;color:#747f8e;margin-top:9px}.error{color:#ff9f9f!important}.good{color:#9fe0b4!important}@media(max-width:800px){.grid{grid-template-columns:1fr}.stage{min-height:420px}.result{max-height:60vh}}@media(max-width:480px){body{padding:10px}.panel{padding:14px}.row{grid-template-columns:1fr}.stage{min-height:340px}}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#090b10;color:#f4f7fb;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:16px}.wrap{width:min(1100px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}.brand h1{font-size:clamp(25px,5vw,40px);margin:0}.brand p{margin:5px 0 0;color:#8f99a9;font-size:13px}.pill{border:1px solid #303744;background:#11151d;padding:8px 11px;border-radius:999px;color:#aeb8c7;font-size:12px;white-space:nowrap}.grid{display:grid;grid-template-columns:360px 1fr;gap:16px}.panel{border:1px solid #292f39;background:#10141b;border-radius:18px;padding:18px}.panel h2{font-size:16px;margin:0 0 14px}.label{display:block;font-size:12px;color:#a4adba;margin:13px 0 7px}textarea,input,select{width:100%;border:1px solid #333b48;background:#0a0e14;color:#fff;border-radius:11px;padding:11px;font:inherit;outline:none}textarea{min-height:115px;resize:vertical}textarea:focus,input:focus,select:focus{border-color:#596678}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.device{margin-top:14px;padding:12px;border:1px solid #303744;border-radius:12px;background:#0c1016}.device strong{display:block;font-size:13px}.device span{display:block;color:#8791a0;font-size:11px;line-height:1.5;margin-top:4px}.actions{display:flex;gap:9px;margin-top:15px}.btn{flex:1;border:1px solid #394250;background:#1a202a;color:#fff;border-radius:11px;padding:12px;font-weight:750;cursor:pointer}.btn.primary{background:#dce6f2;color:#0b0e13;border-color:#dce6f2}.btn:disabled{opacity:.45;cursor:not-allowed}.note{margin-top:12px;color:#788392;font-size:11px;line-height:1.5}.stage{min-height:560px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}.empty{text-align:center;color:#727d8d;padding:40px}.empty b{display:block;color:#aeb8c7;margin-bottom:7px}.result{max-width:100%;max-height:72vh;width:auto;height:auto;border-radius:13px;display:block}.progress{position:absolute;left:18px;right:18px;bottom:18px;display:none;padding:12px 13px;border:1px solid #303744;background:#0c1016e8;border-radius:13px;backdrop-filter:blur(8px)}.progress.show{display:block}.bar{height:8px;background:#252c37;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:#dce6f2;transition:width .2s}.progressLine{display:flex;justify-content:space-between;gap:12px;margin-top:8px;font-size:11px;color:#aeb8c7}.progressLine span:last-child{text-align:right}.progress p{margin:6px 0 0;font-size:11px;color:#909aaa}.small{font-size:11px;color:#747f8e;margin-top:9px}.error{color:#ff9f9f!important}.good{color:#9fe0b4!important}@media(max-width:800px){.grid{grid-template-columns:1fr}.stage{min-height:420px}.result{max-height:60vh}}@media(max-width:480px){body{padding:10px}.panel{padding:14px}.row{grid-template-columns:1fr}.stage{min-height:340px}.progressLine{font-size:10px}}
 </style>
 </head>
 <body>
@@ -29,72 +29,53 @@
 </div>
 <div class="device" id="deviceBox"><strong>Detecting hardware…</strong><span>WebGPU and device limits are being checked.</span></div>
 <div class="actions"><button class="btn primary" id="generate">Generate</button><button class="btn" id="stop" disabled>Stop</button></div>
-<div class="note">The model is downloaded and cached on first use. Generation runs locally in the browser. No prompt or generated image is sent to a generation backend. Auto reduces resolution and steps on lower-power devices to reduce sustained load.</div>
+<div class="note">The model is downloaded and cached on first use. During the download you can see live bytes, percentage, speed, and estimated time remaining. Generation runs locally in the browser. No prompt or generated image is sent to a generation backend.</div>
 </section>
 <section class="panel stage" id="stage">
 <div class="empty" id="empty"><b>Ready</b>Press Generate to load the local model and create an image.</div>
 <img class="result" id="result" hidden alt="AI generated image">
-<div class="progress" id="progress"><div class="bar"><div class="fill" id="fill"></div></div><p id="progressText">Preparing…</p></div>
+<div class="progress" id="progress"><div class="bar"><div class="fill" id="fill"></div></div><div class="progressLine"><span id="downloadAmount">0 MB / 0 MB</span><span id="downloadSpeed">0 MB/s</span></div><div class="progressLine"><span id="downloadPercent">0%</span><span id="downloadEta">Calculating…</span></div><p id="progressText">Preparing…</p></div>
 </section>
 </div>
 </div>
+<script>
+const $=id=>document.getElementById(id);
+const progress=$('progress'),fill=$('fill'),progressText=$('progressText'),downloadAmount=$('downloadAmount'),downloadSpeed=$('downloadSpeed'),downloadPercent=$('downloadPercent'),downloadEta=$('downloadEta');
+let downloadStarted=0,downloadBytes=0,downloadTotal=0,downloadTimer=0,downloadActive=false;
+function formatBytes(v){if(!Number.isFinite(v)||v<=0)return'0 B';const u=['B','KB','MB','GB','TB'];const i=Math.min(Math.floor(Math.log(v)/Math.log(1024)),u.length-1);return(v/Math.pow(1024,i)).toFixed(i?2:0)+' '+u[i]}
+function formatTime(sec){if(!Number.isFinite(sec)||sec<=0)return'Calculating…';if(sec<60)return Math.ceil(sec)+'s left';const m=Math.floor(sec/60),s=Math.ceil(sec%60);if(m<60)return m+'m '+s+'s left';const h=Math.floor(m/60);return h+'h '+(m%60)+'m left'}
+function updateDownload(bytes,total){downloadBytes=bytes;downloadTotal=Math.max(downloadTotal,total||0);const elapsed=Math.max(.1,(performance.now()-downloadStarted)/1000);const speed=bytes/elapsed;const pct=downloadTotal?Math.min(100,bytes/downloadTotal*100):0;fill.style.width=pct.toFixed(2)+'%';downloadAmount.textContent=formatBytes(bytes)+' / '+(downloadTotal?formatBytes(downloadTotal):'unknown');downloadSpeed.textContent=formatBytes(speed)+'/s';downloadPercent.textContent=downloadTotal?pct.toFixed(1)+'%':'Downloaded '+formatBytes(bytes);downloadEta= $('downloadEta');downloadEta.textContent=downloadTotal&&speed>0?formatTime((downloadTotal-bytes)/speed):'Calculating…';}
+function startDownload(){downloadStarted=performance.now();downloadBytes=0;downloadTotal=0;downloadActive=true;progress.classList.add('show');fill.style.width='0%';downloadAmount.textContent='0 MB / calculating total…';downloadSpeed.textContent='0 MB/s';downloadPercent.textContent='0%';downloadEta.textContent='Calculating…';downloadTimer=setInterval(()=>updateDownload(downloadBytes,downloadTotal),500)}
+function finishDownload(){downloadActive=false;clearInterval(downloadTimer);if(downloadTotal&&downloadBytes>=downloadTotal)updateDownload(downloadTotal,downloadTotal);downloadSpeed.textContent='Complete';downloadEta.textContent='Download complete';fill.style.width='100%'}
+const originalFetch=window.fetch.bind(window);
+window.fetch=async function(input,init){
+ const response=await originalFetch(input,init);
+ const url=typeof input==='string'?input:(input?.url||'');
+ const isModel=url.includes('aislamov/stable-diffusion-2-1-base-onnx')||url.includes('huggingface.co')||url.includes('cdn-lfs');
+ if(!isModel||!response.body)return response;
+ const total=Number(response.headers.get('content-length'))||0;
+ if(!downloadActive)startDownload();
+ if(total)downloadTotal+=total;
+ const reader=response.body.getReader();
+ let loaded=0;
+ const stream=new ReadableStream({async pull(controller){try{const {done,value}=await reader.read();if(done){controller.close();if(!downloadActive)return;downloadBytes+=0;return}loaded+=value.byteLength;downloadBytes+=value.byteLength;updateDownload(downloadBytes,downloadTotal);controller.enqueue(value)}catch(e){controller.error(e)}}});
+ return new Response(stream,{status:response.status,statusText:response.statusText,headers:response.headers});
+};
+</script>
 <script type="module">
-import { DiffusionPipeline } from 'https://esm.sh/@aislamov/diffusers.js@0.9.3';
-
 const $=id=>document.getElementById(id);
 const prompt=$('prompt'),negative=$('negative'),quality=$('quality'),steps=$('steps'),size=$('size'),seed=$('seed');
 const generate=$('generate'),stop=$('stop'),result=$('result'),empty=$('empty'),deviceBox=$('deviceBox'),pill=$('statusPill'),progress=$('progress'),fill=$('fill'),progressText=$('progressText');
 let pipe=null,busy=false,deviceInfo={gpu:false,cores:navigator.hardwareConcurrency||2,memory:navigator.deviceMemory||0};
 
-function setAuto(tier){
- if(tier==='low'){steps.value='8';size.value='384'}
- if(tier==='medium'){steps.value='12';size.value='512'}
- if(tier==='high'){steps.value='18';size.value='640'}
-}
-function getTier(){
- if(deviceInfo.gpu&&deviceInfo.cores>=8&&(deviceInfo.memory===0||deviceInfo.memory>=8))return'high';
- if(deviceInfo.gpu&&deviceInfo.cores>=4&&(deviceInfo.memory===0||deviceInfo.memory>=4))return'medium';
- return'low';
-}
-async function detect(){
- deviceInfo.gpu=!!navigator.gpu;
- const tier=getTier(),labels={low:'Eco',medium:'Balanced',high:'Quality'};
- pill.textContent='Device: '+labels[tier];
- deviceBox.innerHTML='<strong>'+labels[tier]+' profile detected</strong><span>'+ (deviceInfo.gpu?'WebGPU available · GPU acceleration enabled':'WebGPU unavailable · CPU/WASM mode may be very slow') +' · '+deviceInfo.cores+' CPU cores'+(deviceInfo.memory?' · '+deviceInfo.memory+' GB reported memory':'')+'</span>';
- if(quality.value==='auto')setAuto(tier);
- if(!deviceInfo.gpu){generate.disabled=true;deviceBox.classList.add('error');deviceBox.querySelector('span').textContent+=' · Use a browser/device with WebGPU for this site.';}
-}
+function setAuto(tier){if(tier==='low'){steps.value='8';size.value='384'}if(tier==='medium'){steps.value='12';size.value='512'}if(tier==='high'){steps.value='18';size.value='640'}}
+function getTier(){if(deviceInfo.gpu&&deviceInfo.cores>=8&&(deviceInfo.memory===0||deviceInfo.memory>=8))return'high';if(deviceInfo.gpu&&deviceInfo.cores>=4&&(deviceInfo.memory===0||deviceInfo.memory>=4))return'medium';return'low'}
+async function detect(){deviceInfo.gpu=!!navigator.gpu;const tier=getTier(),labels={low:'Eco',medium:'Balanced',high:'Quality'};pill.textContent='Device: '+labels[tier];deviceBox.innerHTML='<strong>'+labels[tier]+' profile detected</strong><span>'+(deviceInfo.gpu?'WebGPU available · GPU acceleration enabled':'WebGPU unavailable · CPU/WASM mode may be very slow')+' · '+deviceInfo.cores+' CPU cores'+(deviceInfo.memory?' · '+deviceInfo.memory+' GB reported memory':'')+'</span>';if(quality.value==='auto')setAuto(tier);if(!deviceInfo.gpu){generate.disabled=true;deviceBox.classList.add('error');deviceBox.querySelector('span').textContent+=' · Use a browser/device with WebGPU for this site.'}}
 quality.addEventListener('change',()=>{if(quality.value==='auto')setAuto(getTier())});
 
-async function loadModel(){
- if(pipe)return pipe;
- progress.classList.add('show');fill.style.width='5%';progressText.textContent='Downloading local AI model… first run is large.';
- pipe=await DiffusionPipeline.fromPretrained('aislamov/stable-diffusion-2-1-base-onnx');
- fill.style.width='25%';progressText.textContent='Loading model into device memory…';
- return pipe;
-}
-async function make(){
- if(busy)return;
- const text=prompt.value.trim();
- if(!text){progressText.textContent='Enter a prompt first.';progress.classList.add('show');fill.style.width='0%';return}
- busy=true;generate.disabled=true;stop.disabled=false;result.hidden=true;empty.hidden=true;progress.classList.add('show');fill.style.width='3%';
- try{
-  const p=await loadModel();
-  const n=Math.max(4,Math.min(24,Number(steps.value)||12));
-  const s=Math.max(256,Math.min(640,Number(size.value)||512));
-  const seedValue=Number(seed.value);
-  progressText.textContent='Generating '+s+'×'+s+' image · '+n+' steps…';fill.style.width='35%';
-  const options={prompt:text,negative_prompt:negative.value.trim(),numInferenceSteps:n,height:s,width:s};
-  if(Number.isFinite(seedValue)&&seedValue>=0)options.seed=seedValue;
-  const images=await p.run(options);
-  const data=await images[0].toImageData({tensorLayout:'NCWH',format:'RGB'});
-  const canvas=document.createElement('canvas');canvas.width=s;canvas.height=s;canvas.getContext('2d').putImageData(data,0,0);
-  result.src=canvas.toDataURL('image/png');result.hidden=false;fill.style.width='100%';progressText.textContent='Done · generated locally on this device';progressText.className='good';
- }catch(e){
-  console.error(e);empty.hidden=false;empty.innerHTML='<b>Generation failed</b><span class="error">'+String(e?.message||e)+'</span><div class="small">If the device cannot keep the model in memory, choose Eco or close other heavy apps.</div>';result.hidden=true;fill.style.width='0%';progressText.textContent='Generation failed';progressText.className='error';
- }finally{busy=false;generate.disabled=!deviceInfo.gpu;stop.disabled=true;setTimeout(()=>{progress.classList.remove('show');progressText.className=''},5000)}
-}
-stop.onclick=()=>{if(busy){progressText.textContent='Finishing current device operation…'}};
+async function loadModel(){if(pipe)return pipe;progress.classList.add('show');fill.style.width='0%';progressText.textContent='Downloading AI model to this device…';const {DiffusionPipeline}=await import('https://esm.sh/@aislamov/diffusers.js@0.9.3');pipe=await DiffusionPipeline.fromPretrained('aislamov/stable-diffusion-2-1-base-onnx');finishDownload();progressText.textContent='Model downloaded · loading into device memory…';return pipe}
+async function make(){if(busy)return;const text=prompt.value.trim();if(!text){progressText.textContent='Enter a prompt first.';progress.classList.add('show');fill.style.width='0%';return}busy=true;generate.disabled=true;stop.disabled=false;result.hidden=true;empty.hidden=true;progress.classList.add('show');try{const p=await loadModel();const n=Math.max(4,Math.min(24,Number(steps.value)||12));const s=Math.max(256,Math.min(640,Number(size.value)||512));const seedValue=Number(seed.value);progressText.textContent='Generating '+s+'×'+s+' image · '+n+' steps…';fill.style.width='100%';$('downloadAmount').textContent='Model ready';$('downloadSpeed').textContent='Local generation';$('downloadPercent').textContent='100%';$('downloadEta').textContent='Working…';const options={prompt:text,negative_prompt:negative.value.trim(),numInferenceSteps:n,height:s,width:s};if(Number.isFinite(seedValue)&&seedValue>=0)options.seed=seedValue;const images=await p.run(options);const data=await images[0].toImageData({tensorLayout:'NCWH',format:'RGB'});const canvas=document.createElement('canvas');canvas.width=s;canvas.height=s;canvas.getContext('2d').putImageData(data,0,0);result.src=canvas.toDataURL('image/png');result.hidden=false;fill.style.width='100%';progressText.textContent='Done · generated locally on this device';progressText.className='good';$('downloadEta').textContent='Done'}catch(e){console.error(e);empty.hidden=false;empty.innerHTML='<b>Generation failed</b><span class="error">'+String(e?.message||e)+'</span><div class="small">If the device cannot keep the model in memory, choose Eco or close other heavy apps.</div>';result.hidden=true;fill.style.width='0%';progressText.textContent='Generation failed';progressText.className='error';$('downloadEta').textContent='Failed'}finally{busy=false;generate.disabled=!deviceInfo.gpu;stop.disabled=true;setTimeout(()=>{progress.classList.remove('show');progressText.className=''},5000)}}
+stop.onclick=()=>{if(busy)progressText.textContent='Finishing current device operation…'};
 generate.onclick=make;
 detect();
 </script>
