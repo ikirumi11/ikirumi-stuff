@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b10">
+<title>Device AI Image</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#090b10;color:#f4f7fb;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:16px}.wrap{width:min(1100px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}.brand h1{font-size:clamp(25px,5vw,40px);margin:0}.brand p{margin:5px 0 0;color:#8f99a9;font-size:13px}.pill{border:1px solid #303744;background:#11151d;padding:8px 11px;border-radius:999px;color:#aeb8c7;font-size:12px;white-space:nowrap}.grid{display:grid;grid-template-columns:360px 1fr;gap:16px}.panel{border:1px solid #292f39;background:#10141b;border-radius:18px;padding:18px}.panel h2{font-size:16px;margin:0 0 14px}.label{display:block;font-size:12px;color:#a4adba;margin:13px 0 7px}textarea,input,select{width:100%;border:1px solid #333b48;background:#0a0e14;color:#fff;border-radius:11px;padding:11px;font:inherit;outline:none}textarea{min-height:115px;resize:vertical}textarea:focus,input:focus,select:focus{border-color:#596678}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.device{margin-top:14px;padding:12px;border:1px solid #303744;border-radius:12px;background:#0c1016}.device strong{display:block;font-size:13px}.device span{display:block;color:#8791a0;font-size:11px;line-height:1.5;margin-top:4px}.actions{display:flex;gap:9px;margin-top:15px}.btn{flex:1;border:1px solid #394250;background:#1a202a;color:#fff;border-radius:11px;padding:12px;font-weight:750;cursor:pointer}.btn.primary{background:#dce6f2;color:#0b0e13;border-color:#dce6f2}.btn:disabled{opacity:.45;cursor:not-allowed}.note{margin-top:12px;color:#788392;font-size:11px;line-height:1.5}.stage{min-height:560px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}.empty{text-align:center;color:#727d8d;padding:40px}.empty b{display:block;color:#aeb8c7;margin-bottom:7px}.result{max-width:100%;max-height:72vh;width:auto;height:auto;border-radius:13px;display:block}.progress{position:absolute;left:18px;right:18px;bottom:18px;display:none}.progress.show{display:block}.bar{height:7px;background:#252c37;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:#dce6f2;transition:width .25s}.progress p{margin:7px 0 0;font-size:11px;color:#909aaa}.small{font-size:11px;color:#747f8e;margin-top:9px}.error{color:#ff9f9f!important}.good{color:#9fe0b4!important}@media(max-width:800px){.grid{grid-template-columns:1fr}.stage{min-height:420px}.result{max-height:60vh}}@media(max-width:480px){body{padding:10px}.panel{padding:14px}.row{grid-template-columns:1fr}.stage{min-height:340px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><div class="brand"><h1>Device AI Image</h1><p>Generate images on your device, not on an AI generation server.</p></div><div class="pill" id="statusPill">Checking device…</div></div>
+<div class="grid">
+<section class="panel">
+<h2>Generate</h2>
+<label class="label" for="prompt">Prompt</label>
+<textarea id="prompt" placeholder="A small cabin in snowy mountains, cinematic lighting, detailed digital art"></textarea>
+<label class="label" for="negative">Negative prompt</label>
+<input id="negative" value="blurry, low quality, distorted, text, watermark">
+<div class="row">
+<div><label class="label" for="quality">Device quality</label><select id="quality"><option value="auto">Auto</option><option value="eco">Eco</option><option value="balanced">Balanced</option><option value="quality">Quality</option></select></div>
+<div><label class="label" for="steps">Steps</label><select id="steps"><option value="8">8 · Eco</option><option value="12" selected>12 · Balanced</option><option value="18">18 · Quality</option><option value="24">24 · Max</option></select></div>
+</div>
+<div class="row">
+<div><label class="label" for="size">Resolution</label><select id="size"><option value="384">384 × 384</option><option value="512" selected>512 × 512</option><option value="640">640 × 640</option></select></div>
+<div><label class="label" for="seed">Seed</label><input id="seed" type="number" value="-1" min="-1"></div>
+</div>
+<div class="device" id="deviceBox"><strong>Detecting hardware…</strong><span>WebGPU and device limits are being checked.</span></div>
+<div class="actions"><button class="btn primary" id="generate">Generate</button><button class="btn" id="stop" disabled>Stop</button></div>
+<div class="note">The model is downloaded and cached on first use. Generation runs locally in the browser. No prompt or generated image is sent to a generation backend. For lower-power devices, Auto reduces resolution and steps to reduce sustained load.</div>
+</section>
+<section class="panel stage" id="stage">
+<div class="empty" id="empty"><b>Ready</b>Press Generate to load the local model and create an image.</div>
+<img class="result" id="result" hidden alt="AI generated image">
+<div class="progress" id="progress"><div class="bar"><div class="fill" id="fill"></div></div><p id="progressText">Preparing…</p></div>
+</section>
+</div>
+</div>
+<script type="module">
+import { DiffusionPipeline } from 'https://esm.sh/@aislamov/diffusers.js@0.1.7';
+
+const $=id=>document.getElementById(id);
+const prompt=$('prompt'),negative=$('negative'),quality=$('quality'),steps=$('steps'),size=$('size'),seed=$('seed');
+const generate=$('generate'),stop=$('stop'),result=$('result'),empty=$('empty'),deviceBox=$('deviceBox'),pill=$('statusPill'),progress=$('progress'),fill=$('fill'),progressText=$('progressText');
+let pipe=null, busy=false, aborter=null, deviceInfo={gpu:false,cores:navigator.hardwareConcurrency||2,memory:navigator.deviceMemory||0};
+
+async function detect(){
+ deviceInfo.gpu=!!navigator.gpu;
+ const mem=deviceInfo.memory;
+ let tier='low';
+ if(deviceInfo.gpu&&deviceInfo.cores>=8&&(mem===0||mem>=8))tier='high';
+ else if(deviceInfo.gpu&&deviceInfo.cores>=4&&(mem===0||mem>=4))tier='medium';
+ const labels={low:'Eco',medium:'Balanced',high:'Quality'};
+ pill.textContent='Device: '+labels[tier];
+ deviceBox.innerHTML='<strong>'+labels[tier]+' profile detected</strong><span>'+ (deviceInfo.gpu?'WebGPU available · GPU acceleration enabled':'WebGPU unavailable · CPU/WASM mode may be very slow') +' · '+deviceInfo.cores+' CPU cores'+(mem?' · '+mem+' GB reported memory':'')+'</span>';
+ if(quality.value==='auto') setAuto(tier);
+ if(!deviceInfo.gpu){generate.disabled=true;deviceBox.classList.add('error');deviceBox.querySelector('span').textContent+=' · Use a browser/device with WebGPU for this site.';}
+ return tier;
+}
+function setAuto(tier){
+ if(tier==='low'){steps.value='8';size.value='384'}
+ if(tier==='medium'){steps.value='12';size.value='512'}
+ if(tier==='high'){steps.value='18';size.value='640'}
+}
+quality.addEventListener('change',async()=>{if(quality.value==='auto'){let t='low';if(deviceInfo.gpu&&deviceInfo.cores>=8&&(deviceInfo.memory===0||deviceInfo.memory>=8))t='high';else if(deviceInfo.gpu&&deviceInfo.cores>=4&&(deviceInfo.memory===0||deviceInfo.memory>=4))t='medium';setAuto(t)}});
+
+async function loadModel(){
+ if(pipe)return pipe;
+ progress.classList.add('show');fill.style.width='5%';progressText.textContent='Downloading local AI model… first run can be large.';
+ pipe=await DiffusionPipeline.fromPretrained('aislamov/stable-diffusion-2-1-base-onnx');
+ fill.style.width='25%';progressText.textContent='Loading model into device memory…';
+ return pipe;
+}
+async function make(){
+ if(busy)return;
+ const text=prompt.value.trim();
+ if(!text){progressText.textContent='Enter a prompt first.';progress.classList.add('show');fill.style.width='0%';return}
+ busy=true;generate.disabled=true;stop.disabled=false;result.hidden=true;empty.hidden=true;progress.classList.add('show');fill.style.width='3%';aborter=new AbortController();
+ try{
+  const p=await loadModel();
+  const n=Math.max(4,Math.min(24,Number(steps.value)||12));
+  const s=Math.max(256,Math.min(640,Number(size.value)||512));
+  const seedValue=Number(seed.value);
+  progressText.textContent='Generating '+s+'×'+s+' image · '+n+' steps…';fill.style.width='35%';
+  const options={prompt:text,negative_prompt:negative.value.trim(),numInferenceSteps:n,height:s,width:s};
+  if(Number.isFinite(seedValue)&&seedValue>=0)options.seed=seedValue;
+  const images=await p.run(options);
+  if(aborter.signal.aborted)throw new Error('Generation stopped.');
+  const data=await images[0].toImageData({tensorLayout:'NCWH',format:'RGB'});
+  const canvas=document.createElement('canvas');canvas.width=s;canvas.height=s;canvas.getContext('2d').putImageData(data,0,0);
+  result.src=canvas.toDataURL('image/png');result.hidden=false;fill.style.width='100%';progressText.textContent='Done · generated locally on this device';progressText.className='good';
+ }catch(e){
+  console.error(e);empty.hidden=false;empty.innerHTML='<b>Generation failed</b><span class="error">'+String(e?.message||e)+'</span><div class="small">If the device cannot keep the model in memory, choose Eco or close other heavy apps.</div>';result.hidden=true;fill.style.width='0%';progressText.textContent='Generation failed';progressText.className='error';
+ }finally{busy=false;generate.disabled=!deviceInfo.gpu;stop.disabled=true;aborter=null;setTimeout(()=>{progress.classList.remove('show');progressText.className='';},5000)}
+}
+stop.onclick=()=>{if(aborter){aborter.abort();progressText.textContent='Stopping…'}};
+generate.onclick=make;
+detect();
+</script>
+</body>
+</html>
