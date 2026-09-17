@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080a0f">
+<title>File Converter</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#080a0f;color:#f5f7fb;font-family:system-ui,-apple-system,Segoe UI,sans-serif}body{padding:16px}.wrap{max-width:900px;margin:auto}.head{margin:10px 0 16px}.head h1{margin:0;font-size:clamp(28px,7vw,46px)}.head p{margin:5px 0;color:#8993a2;font-size:13px}.card{border:1px solid #2b313b;background:#10141b;border-radius:18px;padding:16px;margin-bottom:12px}.drop{border:1px dashed #4b5563;border-radius:15px;padding:32px 16px;text-align:center;cursor:pointer;background:#0c1016;transition:.15s}.drop.drag{border-color:#dbe4ef;background:#151b24}.drop strong{display:block;font-size:17px}.drop span{display:block;margin-top:5px;color:#7f8998;font-size:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}label{display:block;color:#9ca6b5;font-size:11px;margin-bottom:6px}select,button{width:100%;border:1px solid #394250;background:#181e27;color:#fff;border-radius:11px;padding:12px;font:inherit}button{font-weight:700;cursor:pointer}.primary{margin-top:12px;background:#dfe7f0;color:#0b0e13;border-color:#dfe7f0}.info{font-size:12px;color:#8993a2;line-height:1.5}.file{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid #292f39;background:#0d1117;border-radius:12px;padding:11px;margin-top:9px}.file b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file span{color:#7f8998;font-size:11px;white-space:nowrap}.status{margin-top:10px;min-height:20px;font-size:12px;color:#aeb8c7}.hidden{display:none}.warn{color:#d5b77a}@media(max-width:600px){.row{grid-template-columns:1fr}.card{padding:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="head"><h1>File Converter</h1><p>Convert files in your browser while preserving the available data.</p></div>
+<div class="card">
+<div class="drop" id="drop"><strong>Choose a file</strong><span>or drag and drop one here</span></div>
+<input id="file" type="file" class="hidden">
+<div id="selected"></div>
+<div class="row">
+<div><label>Convert from</label><select id="from"></select></div>
+<div><label>Convert to</label><select id="to"></select></div>
+</div>
+<button class="primary" id="convert" disabled>Convert file</button>
+<div class="status" id="status"></div>
+</div>
+<div class="card info"><b>Browser conversion</b><br>Text and data formats can be converted directly. Images can be converted between common image formats. Some complex formats require their original application because a browser cannot safely reproduce every internal feature.</div>
+</div>
+<script>
+const fileInput=document.getElementById('file'),drop=document.getElementById('drop'),selected=document.getElementById('selected'),from=document.getElementById('from'),to=document.getElementById('to'),convert=document.getElementById('convert'),status=document.getElementById('status');let file=null;
+const formats={txt:{name:'TXT',mime:'text/plain',kind:'text'},csv:{name:'CSV',mime:'text/csv',kind:'text'},json:{name:'JSON',mime:'application/json',kind:'json'},html:{name:'HTML',mime:'text/html',kind:'text'},md:{name:'Markdown',mime:'text/markdown',kind:'text'},xml:{name:'XML',mime:'application/xml',kind:'text'},svg:{name:'SVG',mime:'image/svg+xml',kind:'text'},png:{name:'PNG',mime:'image/png',kind:'image'},jpg:{name:'JPG',mime:'image/jpeg',kind:'image'},webp:{name:'WebP',mime:'image/webp',kind:'image'}};
+Object.keys(formats).forEach(k=>{from.add(new Option(formats[k].name,k));to.add(new Option(formats[k].name,k))});
+function ext(n){const m=n.toLowerCase().match(/\.([a-z0-9]+)$/);return m?m[1]:''}function setFile(f){file=f;const e=ext(f.name);if(formats[e])from.value=e;selected.innerHTML='<div class="file"><b>'+escapeHtml(f.name)+'</b><span>'+size(f.size)+'</span></div>';convert.disabled=false;status.textContent='';updateTargets()}
+function size(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(1)+' MB';return (n/1073741824).toFixed(1)+' GB'}function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function updateTargets(){const f=formats[from.value];const current=to.value;if(f&&formats[current]?.kind===f.kind&&current!==from.value)to.value=current;else{const same=Object.keys(formats).find(k=>k!==from.value&&formats[k].kind===f?.kind);to.value=same||Object.keys(formats).find(k=>k!==from.value)||current}}
+fileInput.onchange=e=>{if(e.target.files[0])setFile(e.target.files[0])};drop.onclick=()=>fileInput.click();drop.ondragover=e=>{e.preventDefault();drop.classList.add('drag')};drop.ondragleave=()=>drop.classList.remove('drag');drop.ondrop=e=>{e.preventDefault();drop.classList.remove('drag');if(e.dataTransfer.files[0])setFile(e.dataTransfer.files[0])};from.onchange=updateTargets;
+async function convertText(input,target){const text=await file.text();if(target==='json'){try{return JSON.stringify(JSON.parse(text),null,2)}catch{return JSON.stringify({content:text},null,2)}}if(target==='csv'&&input==='json'){try{const data=JSON.parse(text);const rows=Array.isArray(data)?data:[data];const keys=[...new Set(rows.flatMap(o=>Object.keys(o||{})))];return [keys.join(','),...rows.map(o=>keys.map(k=>csv(o?.[k])).join(','))].join('\n')}catch{return text}}if(target==='json'&&input==='csv'){const lines=text.split(/\r?\n/).filter(Boolean),keys=parseCsvLine(lines.shift()||'');return JSON.stringify(lines.map(l=>{const v=parseCsvLine(l),o={};keys.forEach((k,i)=>o[k]??=(v[i]??''));return o}),null,2)}return text}function csv(v){const s=typeof v==='object'&&v!==null?JSON.stringify(v):String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}function parseCsvLine(s){const a=[];let q=false,v='';for(let i=0;i<s.length;i++){const c=s[i];if(c==='"'&&s[i+1]==='"'&&q){v+='"';i++}else if(c==='"')q=!q;else if(c===','&&!q){a.push(v);v=''}else v+=c}a.push(v);return a}
+function imageConvert(target){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;const ctx=canvas.getContext('2d');if(target==='jpg')ctx.fillStyle='#fff',ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0);canvas.toBlob(b=>b?resolve(b):reject(new Error('Image conversion failed')),formats[target].mime,.92)};img.onerror=()=>reject(new Error('This image could not be decoded'));img.src=URL.createObjectURL(file)})}
+convert.onclick=async()=>{if(!file)return;const a=from.value,b=to.value;if(a===b){status.textContent='Choose a different output type.';return}convert.disabled=true;status.textContent='Converting…';try{let blob,name;if(formats[a].kind==='image'&&formats[b].kind==='image'){blob=await imageConvert(b);name=file.name.replace(/\.[^.]+$/,'')+'.'+b}else if(formats[a].kind==='text'&&formats[b].kind==='text'||formats[a].kind==='json'&&formats[b].kind==='text'||formats[a].kind==='text'&&formats[b].kind==='json'){const out=await convertText(a,b);blob=new Blob([out],{type:formats[b].mime});name=file.name.replace(/\.[^.]+$/,'')+'.'+b}else throw new Error('This format pair is not supported in the browser.');const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status.textContent='Done · '+name}catch(e){status.innerHTML='<span class="warn">'+escapeHtml(e.message)+'</span>'}finally{convert.disabled=false}};
+</script>
+</body>
+</html>
