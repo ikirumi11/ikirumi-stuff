@@ -29,7 +29,7 @@
 </div>
 <div class="device" id="deviceBox"><strong>Detecting hardware…</strong><span>WebGPU and device limits are being checked.</span></div>
 <div class="actions"><button class="btn primary" id="generate">Generate</button><button class="btn" id="stop" disabled>Stop</button></div>
-<div class="note">The model is downloaded and cached on first use. Generation runs locally in the browser. No prompt or generated image is sent to a generation backend. For lower-power devices, Auto reduces resolution and steps to reduce sustained load.</div>
+<div class="note">The model is downloaded and cached on first use. Generation runs locally in the browser. No prompt or generated image is sent to a generation backend. Auto reduces resolution and steps on lower-power devices to reduce sustained load.</div>
 </section>
 <section class="panel stage" id="stage">
 <div class="empty" id="empty"><b>Ready</b>Press Generate to load the local model and create an image.</div>
@@ -39,36 +39,36 @@
 </div>
 </div>
 <script type="module">
-import { DiffusionPipeline } from 'https://esm.sh/@aislamov/diffusers.js@0.1.7';
+import { DiffusionPipeline } from 'https://esm.sh/@aislamov/diffusers.js@0.9.3';
 
 const $=id=>document.getElementById(id);
 const prompt=$('prompt'),negative=$('negative'),quality=$('quality'),steps=$('steps'),size=$('size'),seed=$('seed');
 const generate=$('generate'),stop=$('stop'),result=$('result'),empty=$('empty'),deviceBox=$('deviceBox'),pill=$('statusPill'),progress=$('progress'),fill=$('fill'),progressText=$('progressText');
-let pipe=null, busy=false, aborter=null, deviceInfo={gpu:false,cores:navigator.hardwareConcurrency||2,memory:navigator.deviceMemory||0};
+let pipe=null,busy=false,deviceInfo={gpu:false,cores:navigator.hardwareConcurrency||2,memory:navigator.deviceMemory||0};
 
-async function detect(){
- deviceInfo.gpu=!!navigator.gpu;
- const mem=deviceInfo.memory;
- let tier='low';
- if(deviceInfo.gpu&&deviceInfo.cores>=8&&(mem===0||mem>=8))tier='high';
- else if(deviceInfo.gpu&&deviceInfo.cores>=4&&(mem===0||mem>=4))tier='medium';
- const labels={low:'Eco',medium:'Balanced',high:'Quality'};
- pill.textContent='Device: '+labels[tier];
- deviceBox.innerHTML='<strong>'+labels[tier]+' profile detected</strong><span>'+ (deviceInfo.gpu?'WebGPU available · GPU acceleration enabled':'WebGPU unavailable · CPU/WASM mode may be very slow') +' · '+deviceInfo.cores+' CPU cores'+(mem?' · '+mem+' GB reported memory':'')+'</span>';
- if(quality.value==='auto') setAuto(tier);
- if(!deviceInfo.gpu){generate.disabled=true;deviceBox.classList.add('error');deviceBox.querySelector('span').textContent+=' · Use a browser/device with WebGPU for this site.';}
- return tier;
-}
 function setAuto(tier){
  if(tier==='low'){steps.value='8';size.value='384'}
  if(tier==='medium'){steps.value='12';size.value='512'}
  if(tier==='high'){steps.value='18';size.value='640'}
 }
-quality.addEventListener('change',async()=>{if(quality.value==='auto'){let t='low';if(deviceInfo.gpu&&deviceInfo.cores>=8&&(deviceInfo.memory===0||deviceInfo.memory>=8))t='high';else if(deviceInfo.gpu&&deviceInfo.cores>=4&&(deviceInfo.memory===0||deviceInfo.memory>=4))t='medium';setAuto(t)}});
+function getTier(){
+ if(deviceInfo.gpu&&deviceInfo.cores>=8&&(deviceInfo.memory===0||deviceInfo.memory>=8))return'high';
+ if(deviceInfo.gpu&&deviceInfo.cores>=4&&(deviceInfo.memory===0||deviceInfo.memory>=4))return'medium';
+ return'low';
+}
+async function detect(){
+ deviceInfo.gpu=!!navigator.gpu;
+ const tier=getTier(),labels={low:'Eco',medium:'Balanced',high:'Quality'};
+ pill.textContent='Device: '+labels[tier];
+ deviceBox.innerHTML='<strong>'+labels[tier]+' profile detected</strong><span>'+ (deviceInfo.gpu?'WebGPU available · GPU acceleration enabled':'WebGPU unavailable · CPU/WASM mode may be very slow') +' · '+deviceInfo.cores+' CPU cores'+(deviceInfo.memory?' · '+deviceInfo.memory+' GB reported memory':'')+'</span>';
+ if(quality.value==='auto')setAuto(tier);
+ if(!deviceInfo.gpu){generate.disabled=true;deviceBox.classList.add('error');deviceBox.querySelector('span').textContent+=' · Use a browser/device with WebGPU for this site.';}
+}
+quality.addEventListener('change',()=>{if(quality.value==='auto')setAuto(getTier())});
 
 async function loadModel(){
  if(pipe)return pipe;
- progress.classList.add('show');fill.style.width='5%';progressText.textContent='Downloading local AI model… first run can be large.';
+ progress.classList.add('show');fill.style.width='5%';progressText.textContent='Downloading local AI model… first run is large.';
  pipe=await DiffusionPipeline.fromPretrained('aislamov/stable-diffusion-2-1-base-onnx');
  fill.style.width='25%';progressText.textContent='Loading model into device memory…';
  return pipe;
@@ -77,7 +77,7 @@ async function make(){
  if(busy)return;
  const text=prompt.value.trim();
  if(!text){progressText.textContent='Enter a prompt first.';progress.classList.add('show');fill.style.width='0%';return}
- busy=true;generate.disabled=true;stop.disabled=false;result.hidden=true;empty.hidden=true;progress.classList.add('show');fill.style.width='3%';aborter=new AbortController();
+ busy=true;generate.disabled=true;stop.disabled=false;result.hidden=true;empty.hidden=true;progress.classList.add('show');fill.style.width='3%';
  try{
   const p=await loadModel();
   const n=Math.max(4,Math.min(24,Number(steps.value)||12));
@@ -87,15 +87,14 @@ async function make(){
   const options={prompt:text,negative_prompt:negative.value.trim(),numInferenceSteps:n,height:s,width:s};
   if(Number.isFinite(seedValue)&&seedValue>=0)options.seed=seedValue;
   const images=await p.run(options);
-  if(aborter.signal.aborted)throw new Error('Generation stopped.');
   const data=await images[0].toImageData({tensorLayout:'NCWH',format:'RGB'});
   const canvas=document.createElement('canvas');canvas.width=s;canvas.height=s;canvas.getContext('2d').putImageData(data,0,0);
   result.src=canvas.toDataURL('image/png');result.hidden=false;fill.style.width='100%';progressText.textContent='Done · generated locally on this device';progressText.className='good';
  }catch(e){
   console.error(e);empty.hidden=false;empty.innerHTML='<b>Generation failed</b><span class="error">'+String(e?.message||e)+'</span><div class="small">If the device cannot keep the model in memory, choose Eco or close other heavy apps.</div>';result.hidden=true;fill.style.width='0%';progressText.textContent='Generation failed';progressText.className='error';
- }finally{busy=false;generate.disabled=!deviceInfo.gpu;stop.disabled=true;aborter=null;setTimeout(()=>{progress.classList.remove('show');progressText.className='';},5000)}
+ }finally{busy=false;generate.disabled=!deviceInfo.gpu;stop.disabled=true;setTimeout(()=>{progress.classList.remove('show');progressText.className=''},5000)}
 }
-stop.onclick=()=>{if(aborter){aborter.abort();progressText.textContent='Stopping…'}};
+stop.onclick=()=>{if(busy){progressText.textContent='Finishing current device operation…'}};
 generate.onclick=make;
 detect();
 </script>
