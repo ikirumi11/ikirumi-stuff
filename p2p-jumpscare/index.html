@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>P2P Jumpscare</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:system-ui,sans-serif}button,input{font:inherit}.screen{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center}.screen img{width:100%;height:100%;object-fit:contain}.setup{position:fixed;z-index:5;inset:auto 16px 16px 16px;margin:auto;width:min(560px,calc(100% - 32px));background:#111;border:1px solid #333;border-radius:18px;padding:18px;box-shadow:0 15px 60px #000}.setup h1{margin:0 0 5px;font-size:24px}.setup p{margin:0 0 14px;color:#aaa;font-size:13px}.row{display:flex;gap:8px}.row>*{flex:1}input{width:100%;background:#080808;color:#fff;border:1px solid #444;border-radius:10px;padding:11px}.btn{border:1px solid #444;background:#1b1b1b;color:#fff;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}.primary{background:#fff;color:#000}.danger{background:#261111;border-color:#633}.status{margin-top:12px;padding:10px;border:1px solid #292929;border-radius:10px;color:#aaa;font-size:12px}.top{position:fixed;z-index:4;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none}.badge{background:#111d;border:1px solid #333;border-radius:999px;padding:7px 10px;font-size:11px}.hidden{display:none!important}.camera{position:fixed;right:14px;bottom:14px;z-index:6;width:62px;height:62px;border-radius:50%;border:2px solid #fff;background:#111;color:#fff;font-size:25px;cursor:pointer}.flash{position:fixed;inset:0;background:#fff;z-index:20;opacity:0;pointer-events:none}.flash.on{animation:f .25s linear}@keyframes f{0%{opacity:1}100%{opacity:0}}.thumbs{display:flex;gap:6px;margin-top:10px;overflow:auto}.thumbs img{width:52px;height:52px;object-fit:cover;border-radius:7px;border:1px solid #444}.limit{color:#888;font-size:11px;margin-top:8px}@media(max-width:520px){.setup{padding:14px}.row{flex-direction:column}.camera{width:58px;height:58px}}
+</style>
+</head>
+<body>
+<div class="screen"><img id="remoteImage" hidden></div>
+<div class="top"><span class="badge" id="peerBadge">Not connected</span><span class="badge" id="countBadge">0/5 peers</span></div>
+<div class="setup" id="setup">
+<h1>P2P Jumpscare</h1>
+<p>Send one photo directly to the other connected browsers. Everyone receives the newest image and it stays on screen until another image replaces it.</p>
+<div class="row"><input id="room" placeholder="Room code" maxlength="32"><button class="btn primary" id="join">Create / Join</button></div>
+<div class="status" id="status">Choose a room code. The app uses WebRTC for direct peer-to-peer image transfer.</div>
+<div class="thumbs" id="thumbs"></div><div class="limit">Up to 5 connected peers. Images are sent directly between browsers and are not stored by this page.</div>
+</div>
+<button class="camera hidden" id="camera">📷</button>
+<input id="file" type="file" accept="image/*" capture="environment" hidden>
+<div class="flash" id="flash"></div>
+<script>
+const $=x=>document.getElementById(x);let ws=null,room='',id=Math.random().toString(36).slice(2,10),peers=new Map(),current=null;const MAX=5;
+function status(t){$('status').textContent=t}function badge(){ $('countBadge').textContent=peers.size+'/'+MAX+' peers';$('peerBadge').textContent=room?(peers.size?'Connected':'Waiting for peer'):'Not connected'}
+function sendPeer(peer,data){try{peer.send(JSON.stringify(data))}catch{}}
+function broadcast(data){for(const p of peers.values())if(p.readyState==='open')sendPeer(p,data)}
+function addPeer(key,initiator){if(peers.size>=MAX)return null;const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]});let dc=initiator?pc.createDataChannel('images',{ordered:true}):null;if(dc)setupDC(key,dc);pc.ondatachannel=e=>setupDC(key,e.channel);pc.onicecandidate=e=>{if(e.candidate&&ws)ws.send(JSON.stringify({type:'signal',to:key,from:id,room,candidate:e.candidate}))};pc.onconnectionstatechange=()=>{if(['failed','closed','disconnected'].includes(pc.connectionState)){pc.close();peers.delete(key);badge()}};peers.set(key,{pc,dc});badge();return pc}
+function setupDC(key,dc){const p=peers.get(key);if(!p)return;p.dc=dc;dc.onopen=()=>{badge();status('Connected. Camera is ready.');if(current)sendPeer(dc,{type:'image',data:current})};dc.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.type==='image')showImage(d.data)}catch{}};dc.onclose=badge}
+async function connectPeer(key,offer){const p=peers.get(key)||{pc:addPeer(key,true)};const pc=p.pc||p;if(offer){const answer=await pc.createAnswer();await pc.setLocalDescription(answer);ws.send(JSON.stringify({type:'signal',to:key,from:id,room,description:pc.localDescription}))}}
+async function join(){room=$('room').value.trim();if(!room){status('Enter a room code.');return}if(!('WebSocket'in window)){status('WebSocket is unavailable in this browser.');return}localStorage.setItem('p2p-room',room);$('setup').classList.add('hidden');$('camera').classList.remove('hidden');status('Connecting…');badge();
+const proto=location.protocol==='https:'?'wss':'ws';const host=location.hostname||'localhost';const relay='wss://socketsbay.com/wss/v2/1/demo/';try{ws=new WebSocket(relay)}catch{status('Could not connect to the signaling service.');return}ws.onopen=()=>{ws.send(JSON.stringify({type:'join',room,id}));status('Room joined. Waiting for peers…')};ws.onmessage=async e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.id===id)return;if(m.type==='peer'){if(peers.size>=MAX)return;const pc=addPeer(m.id,true);if(!pc)return;const offer=await pc.createOffer();await pc.setLocalDescription(offer);ws.send(JSON.stringify({type:'signal',to:m.id,from:id,room,description:pc.localDescription}))}else if(m.type==='signal'&&m.to===id){let p=peers.get(m.from);if(!p){const pc=addPeer(m.from,false);p=peers.get(m.from)}const pc=p.pc;if(m.description){await pc.setRemoteDescription(m.description);if(m.description.type==='offer'){const answer=await pc.createAnswer();await pc.setLocalDescription(answer);ws.send(JSON.stringify({type:'signal',to:m.from,from:id,room,description:pc.localDescription}))}}if(m.candidate)try{await pc.addIceCandidate(m.candidate)}catch{}}};ws.onerror=()=>status('Signaling connection failed. Try another room code.');ws.onclose=()=>{if(room)status('Signaling disconnected. Existing P2P connections may remain active.')}}
+function showImage(data){current=data;$('remoteImage').src=data;$('remoteImage').hidden=false;$('setup').classList.add('hidden');$('flash').classList.remove('on');void $('flash').offsetWidth;$('flash').classList.add('on')}
+$('join').onclick=join;$('room').value=localStorage.getItem('p2p-room')||'';$('camera').onclick=()=>$('file').click();$('file').onchange=async()=>{const f=$('file').files[0];if(!f)return;if(!f.type.startsWith('image/'))return;const max=5*1024*1024;if(f.size>max){status('Image is too large. Maximum is 5 MB.');return}const reader=new FileReader();reader.onload=()=>{showImage(reader.result);broadcast({type:'image',data:reader.result});$('thumbs').innerHTML='<img src="'+reader.result+'">'+$('thumbs').innerHTML;while($('thumbs').children.length>5)$('thumbs').lastChild.remove()};reader.readAsDataURL(f);$('file').value=''};badge();
+</script>
+</body>
+</html>
