@@ -1,0 +1,11 @@
+Open index.html.
+
+The editor uses blueprint-style source code rather than graphical blocks.
+
+Run with the Run button. Edit input fields on the right before running. Save creates a .bpc project file. Load restores code and inputs.
+
+Supported instructions: input, var, const, set, output, print, log, delay, if, else, end, repeat, times.
+
+Supported types: number, string, boolean, any, array.
+
+Supported conversions: toNumber, toString, toBoolean, toArray.
