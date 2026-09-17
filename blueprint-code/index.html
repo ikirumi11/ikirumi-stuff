@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080b11">
-<title>Blueprint Code</title>
+<title>Python Code Lab</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app">
-<header><div><div class="brand">BLUEPRINT<span>CODE</span></div><div class="sub">Typed logic · math · delays · inputs · outputs</div></div><div class="top-actions"><button id="newBtn">New</button><button id="loadBtn">Load</button><button id="saveBtn">Save</button><input id="fileInput" type="file" accept=".bpc,.json" hidden></div></header>
+<header><div><div class="brand">PYTHON<span>CODE</span></div><div class="sub">Python · logic · math · delays · inputs · outputs</div></div><div class="top-actions"><button id="newBtn">New</button><button id="loadBtn">Load</button><button id="saveBtn">Save</button><input id="fileInput" type="file" accept=".py,.json" hidden></div></header>
 <main>
 <section class="editor-panel panel">
-<div class="panel-head"><b>Blueprint Program</b><div class="run-actions"><button id="runBtn" class="run">▶ Run</button><button id="stopBtn">■ Stop</button></div></div>
+<div class="panel-head"><b>Python Program</b><div class="run-actions"><button id="runBtn" class="run">▶ Run</button><button id="stopBtn">■ Stop</button></div></div>
 <div class="editor-wrap"><div id="lineNums"></div><textarea id="code" spellcheck="false"></textarea></div>
 <div class="editor-foot"><span id="cursor">Ln 1 · Col 1</span><span id="compileState">Ready</span></div>
 </section>
@@ -20,10 +20,10 @@
 <section class="panel"><div class="panel-title">Live Inputs</div><div id="inputs"></div></section>
 <section class="panel"><div class="panel-title">Variables</div><div id="vars"></div></section>
 <section class="panel"><div class="panel-title">Output</div><pre id="output">Program output will appear here.</pre></section>
-<section class="panel"><div class="panel-title">Blueprint Types</div><div class="chips"><span>number</span><span>string</span><span>boolean</span><span>any</span><span>array</span></div></section>
+<section class="panel"><div class="panel-title">Python Types</div><div class="chips"><span>int</span><span>float</span><span>str</span><span>bool</span><span>list</span><span>dict</span><span>None</span></div></section>
 </aside>
 </main>
-<section class="panel help"><div class="panel-title">Syntax</div><div class="syntax"><code>var speed: number = 10</code><code>set speed = speed * 2</code><code>delay 500</code><code>if speed &gt; 15 then</code><code>input name: string</code><code>output "Speed: " + speed</code><code>toBoolean("true") · toNumber("42") · toString(42)</code></div><div id="errors"></div></section>
+<section class="panel help"><div class="panel-title">Python Quick Reference</div><div class="syntax"><code>name = "Marcus"</code><code>speed = start * 2</code><code>if enabled and speed &gt; 5:</code><code>for i in range(3):</code><code>await delay(500)</code><code>print("Speed:", speed)</code><code>int("42") · str(42) · bool(1) · float("2.5")</code></div><div id="errors"></div></section>
 </div>
 <script src="engine.js"></script>
 <script src="app.js"></script>
