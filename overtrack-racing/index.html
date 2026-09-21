@@ -10,7 +10,7 @@
 </head>
 <body>
 <div id="hud"><div class="brand">OVERTRACK</div><div class="pill" id="type">RALLY</div><div class="pill" id="speed">0 km/h</div><div class="pill" id="progress">0%</div><div class="pill" id="time">0:00.000</div><div class="seed"><input id="seedInput" placeholder="Seed"><button class="btn" id="random">Random</button><button class="btn" id="generate">Generate</button><button class="btn" id="reset">Reset</button></div></div>
-<div id="game"><canvas id="c"></canvas><div id="help">WASD / arrows · Space = handbrake drift · R reset · finish the route without teleporting</div><div class="mobile"><button class="pad" data-k="left">←</button><div class="center"><button class="pad small" data-k="brake">●</button><button class="pad small" data-k="gas">▲</button></div><button class="pad" data-k="right">→</button></div></div>
+<div id="game"><canvas id="c"></canvas><div id="help">WASD / arrows · Space = POWER DRIFT · R reset · finish the route without teleporting</div><div class="mobile"><button class="pad" data-k="left">←</button><div class="center"><button class="pad small" data-k="brake">●</button><button class="pad small" data-k="gas">▲</button></div><button class="pad" data-k="right">→</button></div></div>
 <script>
 (()=>{"use strict";
 const c=document.getElementById("c"),ctx=c.getContext("2d"),speedEl=document.getElementById("speed"),progressEl=document.getElementById("progress"),timeEl=document.getElementById("time"),typeEl=document.getElementById("type"),seedInput=document.getElementById("seedInput");
@@ -34,7 +34,7 @@ function makeTrack(seed){
  for(let i=0;i<n-(rally?1:0);i++){let p=smooth[i],q=smooth[(i+1)%n],dx=q.x-p.x,dy=q.y-p.y,l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l;outer.push({x:p.x+nx*width,y:p.y+ny*width});inner.push({x:p.x-nx*width,y:p.y-ny*width})}
  world={points:smooth,outer,inner,rally,n};
  let p=smooth[0],q=smooth[1];car={x:p.x,y:p.y,angle:Math.atan2(q.y-p.y,q.x-p.x),vx:0,vy:0,speed:0,progress:0,lap:1,finished:false};
- elapsed=0;cam={x:car.x,y:car.y};typeEl.textContent=rally?"RALLY":"CIRCUIT";updateHud();
+ elapsed=0;skid=[];cam={x:car.x,y:car.y};typeEl.textContent=rally?"RALLY":"CIRCUIT";updateHud();
 }
 function poly(a){ctx.beginPath();ctx.moveTo(a[0].x,a[0].y);for(let i=1;i<a.length;i++)ctx.lineTo(a[i].x,a[i].y);ctx.closePath()}
 function centerLine(){ctx.beginPath();for(let i=0;i<world.points.length;i++){let p=world.points[i];i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)}if(!world.rally)ctx.closePath();ctx.stroke()}
@@ -42,13 +42,14 @@ function drawTrack(){
  ctx.fillStyle=world.rally?"#20251f":"#15191d";ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2-cam.x,H/2-cam.y);
  if(world.rally){ctx.fillStyle="#4b5047";ctx.fillRect(-500,-100,6500,2400);ctx.fillStyle="#343832";poly(world.outer);ctx.fill();ctx.strokeStyle="#d1c79c";ctx.lineWidth=5;poly(world.outer);ctx.stroke();poly(world.inner);ctx.stroke();ctx.strokeStyle="#ece4c5";ctx.lineWidth=3;ctx.setLineDash([20,30]);centerLine();ctx.setLineDash([])}
  else{ctx.fillStyle="#22272b";poly(world.outer);ctx.fill();ctx.fillStyle="#08734d";ctx.beginPath();for(let i=0;i<world.outer.length;i++){let p=world.outer[i];i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)}for(let i=world.inner.length-1;i>=0;i--){let p=world.inner[i];ctx.lineTo(p.x,p.y)}ctx.closePath();ctx.fill();ctx.fillStyle="#30353a";poly(world.inner);ctx.fill();ctx.strokeStyle="#68717a";ctx.lineWidth=7;poly(world.outer);ctx.stroke();poly(world.inner);ctx.stroke();ctx.strokeStyle="#b5bcc3";ctx.lineWidth=3;ctx.setLineDash([28,26]);centerLine();ctx.setLineDash([])}
- drawMarkers();drawCar();ctx.restore()
+ drawMarkers();drawSkids();drawCar();ctx.restore()
 }
 function drawMarkers(){
  let p=world.points[0],q=world.points[1],a=Math.atan2(q.y-p.y,q.x-p.x),nx=-Math.sin(a),ny=Math.cos(a);
  ctx.strokeStyle="#fff";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(p.x-nx*100,p.y-ny*100);ctx.lineTo(p.x+nx*100,p.y+ny*100);ctx.stroke();
  if(world.rally){let end=world.points[world.points.length-1];ctx.fillStyle="#f2d36b";ctx.beginPath();ctx.arc(end.x,end.y,22,0,Math.PI*2);ctx.fill();ctx.fillStyle="#15191d";ctx.font="bold 14px system-ui";ctx.textAlign="center";ctx.fillText("FINISH",end.x,end.y-30)}
 }
+function drawSkids(){ctx.save();ctx.strokeStyle="rgba(10,10,10,.38)";ctx.lineWidth=4;for(const s of skid){ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);ctx.stroke()}ctx.restore()}
 function drawCar(){ctx.save();ctx.translate(car.x,car.y);ctx.rotate(car.angle);ctx.shadowBlur=18;ctx.shadowColor="#000";ctx.fillStyle="#e2e8ed";ctx.fillRect(-26,-12,52,24);ctx.fillStyle="#17212a";ctx.fillRect(-4,-10,20,20);ctx.fillStyle="#17191b";ctx.fillRect(-19,-15,10,6);ctx.fillRect(9,-15,10,6);ctx.fillRect(-19,9,10,6);ctx.fillRect(9,9,10,6);ctx.fillStyle="#f1c84d";ctx.fillRect(22,-7,5,14);ctx.restore()}
 function nearest(x,y){let best={d:1e9,t:0,i:0};let end=world.rally?world.points.length-1:world.points.length;for(let i=0;i<end;i++){let p=world.points[i],q=world.points[(i+1)%world.points.length],vx=q.x-p.x,vy=q.y-p.y,l=vx*vx+vy*vy||1,t=Math.max(0,Math.min(1,((x-p.x)*vx+(y-p.y)*vy)/l)),px=p.x+vx*t,py=p.y+vy*t,d=Math.hypot(x-px,y-py);if(d<best.d)best={d,t,i}}return best}
 function update(dt){
@@ -57,16 +58,17 @@ function update(dt){
  let throttle=gas?1:0;if(brake)throttle=-.6;
  let fx=Math.cos(car.angle),fy=Math.sin(car.angle),rx=-fy,ry=fx;
  let forward=car.vx*fx+car.vy*fy,lateral=car.vx*rx+car.vy*ry;
- const max=world.rally?900:780,acc=world.rally?470:420;
+ const max=world.rally?980:900,acc=world.rally?650:590;
  if(throttle>0)forward+=acc*dt;else forward*=Math.pow(.997,dt*60);
  if(throttle<0)forward-=330*dt;
  forward=Math.max(-150,Math.min(max,forward));
  let steer=(right?1:0)-(left?1:0);
  if(Math.abs(forward)>20)car.angle+=steer*(hand?2.9:2.15)*Math.min(1,Math.abs(forward)/180)*dt*(forward>=0?1:-1);
- let grip=hand?1.25:(world.rally?4.2:6.8);
+ let grip=hand?0.55:(world.rally?3.2:5.4);
  lateral*=Math.pow(Math.max(.01,1-grip*dt),1);
- if(Math.abs(steer)>0&&Math.abs(forward)>180)lateral+=steer*forward*(hand?.38:.10)*dt;
+ if(Math.abs(steer)>0&&Math.abs(forward)>180)lateral+=steer*forward*(hand?.85:.16)*dt;
  car.vx=fx*forward+rx*lateral;car.vy=fy*forward+ry*lateral;car.x+=car.vx*dt;car.y+=car.vy*dt;car.speed=Math.hypot(car.vx,car.vy);
+ if(hand&&car.speed>220&&Math.abs(lateral)>35){let bx=car.x-fx*19,by=car.y-fy*19;skid.push({x1:bx-rx*9,y1:by-ry*9,x2:bx+rx*9,y2:by+ry*9});if(skid.length>900)skid.splice(0,skid.length-900)}
  let near=nearest(car.x,car.y),limit=world.rally?135:185;
  if(near.d>limit){let slow=Math.max(.12,1-(near.d-limit)/120);car.vx*=Math.pow(slow,dt*60);car.vy*=Math.pow(slow,dt*60)}
  let target=near.i+near.t;
@@ -75,7 +77,7 @@ function update(dt){
  elapsed+=dt;cam.x=lerp(cam.x,car.x,.1);cam.y=lerp(cam.y,car.y,.1);updateHud()
 }
 function lerp(a,b,t){return a+(b-a)*t}
-function updateHud(){speedEl.textContent=Math.round(car.speed*.22)+" km/h";progressEl.textContent=world.rally?Math.round(car.progress*100)+"%":"Lap "+Math.min(car.lap,3)+"/3";let m=Math.floor(elapsed/60),s=(elapsed%60).toFixed(3).padStart(6,"0");timeEl.textContent=car.finished?"FINISH "+m+":"+s:m+":"+s}
+function updateHud(){speedEl.textContent=Math.round(car.speed*.45)+" km/h";progressEl.textContent=world.rally?Math.round(car.progress*100)+"%":"Lap "+Math.min(car.lap,3)+"/3";let m=Math.floor(elapsed/60),s=(elapsed%60).toFixed(3).padStart(6,"0");timeEl.textContent=car.finished?"FINISH "+m+":"+s:m+":"+s}
 function reset(){makeTrack(seedInput.value.trim()||"default")}
 function loop(now){let dt=Math.min(.03,(now-last)/1000);last=now;update(dt);drawTrack();requestAnimationFrame(loop)}
 addEventListener("keydown",e=>{keys[e.key]=true;if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();if(e.key.toLowerCase()==="r")reset()});addEventListener("keyup",e=>keys[e.key]=false);
