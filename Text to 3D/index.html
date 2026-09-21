@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Text to 3D</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07090d;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{width:min(1200px,100%);margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}.top h1{margin:0;font-size:clamp(28px,5vw,44px)}.top p{margin:5px 0;color:#8e98a8}.panel{background:#10141b;border:1px solid #2b323e;border-radius:18px;padding:20px}.prompt{width:100%;min-height:120px;resize:vertical;background:#090c11;color:#fff;border:1px solid #343c49;border-radius:12px;padding:15px;font:inherit}.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.btn{border:1px solid #3a4350;background:#1a2029;color:#fff;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer}.btn.primary{background:#263241}.btn:disabled{opacity:.45;cursor:not-allowed}.preview{margin-top:18px;height:min(62vw,560px);min-height:350px;background:#080b10;border:1px solid #2b323e;border-radius:16px;position:relative;overflow:hidden;display:grid;place-items:center}.preview canvas{width:100%;height:100%;display:block}.hint{color:#7f8998;font-size:13px;margin-top:10px;line-height:1.5}.downloads{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}.status{margin-top:12px;color:#aeb7c5;font-size:13px;min-height:20px}.error{color:#ff9d9d}.ok{color:#9fe0b2}.badge{display:inline-block;border:1px solid #39414d;border-radius:999px;padding:5px 9px;color:#aab4c2;font-size:11px;margin-bottom:10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px}@media(max-width:700px){main{padding:13px}.grid{grid-template-columns:1fr}.preview{min-height:300px}}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><div><h1>Text to 3D</h1><p>Turn a description into a real 3D model</p></div><button class="btn" onclick="location.href='../'">← Back</button></div>
+<div class="panel">
+<span class="badge">AI 3D MODEL GENERATOR</span>
+<textarea id="prompt" class="prompt" placeholder="Describe a model...&#10;&#10;Example: a low-poly red sports car with black wheels"></textarea>
+<div class="row">
+<button class="btn primary" id="generate">Generate 3D model</button>
+<button class="btn" id="sample">Example</button>
+</div>
+<div id="status" class="status">Choose a description and generate a model.</div>
+<div class="preview" id="preview"><div id="empty">Your interactive 3D preview will appear here.</div></div>
+<div class="downloads">
+<button class="btn" id="glb" disabled>Download GLB</button>
+<button class="btn" id="fbx" disabled>Download FBX</button>
+<button class="btn" id="image" disabled>Download 3D image</button>
+</div>
+<div class="hint">The preview is a real 3D scene that can be rotated and zoomed. GLB export is generated in the browser. FBX export requires a compatible converter/model backend, so the button becomes available only when one is connected.</div>
+</div>
+</main>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js';
+import {GLTFExporter} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/exporters/GLTFExporter.js';
+
+const preview=document.getElementById('preview'),status=document.getElementById('status'),prompt=document.getElementById('prompt'),generate=document.getElementById('generate'),glb=document.getElementById('glb'),fbx=document.getElementById('fbx'),image=document.getElementById('image');
+let scene,camera,renderer,controls,current=null,lastPrompt='';
+
+function setup(){
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x080b10);
+ camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.set(3,2.4,4);
+ renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));preview.innerHTML='';preview.appendChild(renderer.domElement);
+ controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;
+ scene.add(new THREE.HemisphereLight(0xffffff,0x303848,2));
+ const key=new THREE.DirectionalLight(0xffffff,3);key.position.set(4,6,5);scene.add(key);
+ const floor=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.MeshStandardMaterial({color:0x161b24,roughness:.8}));floor.rotation.x=-Math.PI/2;floor.position.y=-1.05;scene.add(floor);
+ addResize();animate();
+}
+function addResize(){const r=preview.getBoundingClientRect();camera.aspect=r.width/r.height;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false)}
+new ResizeObserver(addResize).observe(preview);
+function material(c){return new THREE.MeshStandardMaterial({color:c,roughness:.55,metalness:.12})}
+function makeModel(text){
+ if(current){scene.remove(current);current.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()})}
+ const g=new THREE.Group();const t=text.toLowerCase();
+ let type=t.includes('car')?'car':t.includes('tree')?'tree':t.includes('house')?'house':t.includes('robot')?'robot':t.includes('chair')?'chair':t.includes('sword')?'sword':'object';
+ if(type==='car'){
+  const body=new THREE.Mesh(new THREE.BoxGeometry(2.5,.55,1.25),material(0xc62828));body.position.y=-.3;g.add(body);
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(1.35,.55,1.05),material(0xb71c1c));roof.position.set(.15,.22,0);g.add(roof);
+  for(const x of [-.8,.8])for(const z of [-.68,.68]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,.18,24),material(0x17191e));w.rotation.z=Math.PI/2;w.position.set(x,-.7,z);g.add(w)}
+ }else if(type==='tree'){
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,1.5,12),material(0x6d4328));trunk.position.y=-.25;g.add(trunk);
+  const crown=new THREE.Mesh(new THREE.SphereGeometry(1.05,20,14),material(0x26753b));crown.position.y=.8;g.add(crown);
+ }else if(type==='house'){
+  const base=new THREE.Mesh(new THREE.BoxGeometry(2.2,1.4,1.8),material(0xd19a63));base.position.y=-.35;g.add(base);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(1.65,1.15,4),material(0x7b2525));roof.rotation.y=Math.PI/4;roof.position.y=.9;g.add(roof);
+ }else if(type==='robot'){
+  const b=new THREE.Mesh(new THREE.BoxGeometry(1.25,1.5,.8),material(0x788899));b.position.y=.1;g.add(b);
+  const h=new THREE.Mesh(new THREE.BoxGeometry(1,.75,.75),material(0x9aa7b5));h.position.y=1.2;g.add(h);
+  for(const x of [-.65,.65]){const a=new THREE.Mesh(new THREE.BoxGeometry(.3,1.25,.3),material(0x687482));a.position.set(x,.05,0);g.add(a)}
+ }else if(type==='chair'){
+  const m=material(0x5b3a26);const seat=new THREE.Mesh(new THREE.BoxGeometry(1.5,.2,1.5),m);seat.position.y=-.1;g.add(seat);const back=new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,.18),m);back.position.set(0,.65,-.65);g.add(back);for(const x of [-.55,.55])for(const z of [-.55,.55]){const l=new THREE.Mesh(new THREE.BoxGeometry(.18,1,.18),m);l.position.set(x,-.6,z);g.add(l)}
+ }else if(type==='sword'){
+  const blade=new THREE.Mesh(new THREE.BoxGeometry(.22,2.8,.08),material(0xbec9d4));blade.position.y=.8;g.add(blade);const guard=new THREE.Mesh(new THREE.BoxGeometry(1,.14,.16),material(0xc99b35));guard.position.y=-.65;g.add(guard);const grip=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,.75,12),material(0x4b2b1b));grip.position.y=-1.05;g.add(grip);
+ }else{
+  const geo=new THREE.IcosahedronGeometry(1,2);const mesh=new THREE.Mesh(geo,material(0x586ee8));g.add(mesh);
+ }
+ current=g;scene.add(g);center(g);return g;
+}
+function center(g){const box=new THREE.Box3().setFromObject(g),size=box.getSize(new THREE.Vector3()),c=box.getCenter(new THREE.Vector3());g.position.sub(c);const s=Math.max(size.x,size.y,size.z);camera.position.set(s*1.8,s*1.25,s*2.2);controls.target.set(0,0,0);controls.update()}
+function animate(){requestAnimationFrame(animate);if(controls)controls.update();if(renderer)renderer.render(scene,camera)}
+function exportGLB(){
+ if(!current)return;
+ const exporter=new GLTFExporter();exporter.parse(current,r=>{const blob=new Blob([r],{type:'model/gltf-binary'});download(blob,'text-to-3d.glb')},{binary:true});
+}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+generate.onclick=()=>{lastPrompt=prompt.value.trim();if(!lastPrompt){status.textContent='Enter a description first.';status.className='status error';return}makeModel(lastPrompt);status.textContent='3D preview generated. This demo currently creates a procedural model from the description. Connect a real text-to-3D AI endpoint to generate detailed arbitrary meshes.';status.className='status ok';glb.disabled=false;image.disabled=false;fbx.disabled=true};
+glb.onclick=exportGLB;
+image.onclick=()=>{if(renderer){renderer.render(scene,camera);renderer.domElement.toBlob(b=>download(b,'text-to-3d.png'),'image/png')}}
+document.getElementById('sample').onclick=()=>{prompt.value='a futuristic blue sports car with black wheels';prompt.focus()};
+setup();
+</script>
+</body>
+</html>
