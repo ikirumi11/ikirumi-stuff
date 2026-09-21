@@ -3,46 +3,109 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>3D Text</title>
+<title>3D Text Studio</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#07090d;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{width:min(1400px,100%);margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}.top h1{margin:0;font-size:clamp(28px,5vw,44px)}.top p{margin:5px 0;color:#8e98a8}.layout{display:grid;grid-template-columns:360px 1fr;gap:16px}.panel{background:#10141b;border:1px solid #2b323e;border-radius:18px;padding:18px}.preview{height:min(70vh,680px);min-height:420px;background:#080b10;border:1px solid #2b323e;border-radius:16px;overflow:hidden;position:relative}.preview canvas{width:100%;height:100%;display:block}.textarea,.select{width:100%;background:#090c11;color:#fff;border:1px solid #343c49;border-radius:10px;padding:12px;font:inherit}.textarea{min-height:90px;resize:vertical}.control{margin-top:14px}.control label{display:flex;justify-content:space-between;gap:10px;color:#c7ced8;font-size:13px;margin-bottom:7px}.control input[type=range]{width:100%}.control input[type=color]{width:100%;height:40px;background:#090c11;border:1px solid #343c49;border-radius:9px;padding:3px}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.btn{border:1px solid #3a4350;background:#1a2029;color:#fff;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}.btn.primary{background:#263241}.downloads{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.status{margin-top:10px;color:#aeb7c5;font-size:13px;min-height:20px}.badge{display:inline-block;border:1px solid #39414d;border-radius:999px;padding:5px 9px;color:#aab4c2;font-size:11px;margin-bottom:10px}.section{border-top:1px solid #252c36;margin-top:17px;padding-top:15px}.section h2{font-size:14px;margin:0 0 8px}.hint{color:#7f8998;font-size:12px;line-height:1.5;margin-top:10px}@media(max-width:850px){.layout{grid-template-columns:1fr}.preview{min-height:380px;height:55vh}main{padding:12px}}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#07090d;color:#f4f6fa;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{overflow-x:hidden}button,input,select,textarea{font:inherit}.app{min-height:100vh}.top{height:72px;border-bottom:1px solid #202632;background:#0a0d12;display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:5}.brand{display:flex;align-items:center;gap:12px}.logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#7c8cff,#4256d6);display:grid;place-items:center;font-weight:900;box-shadow:0 8px 30px #4256d633}.brand h1{font-size:18px;margin:0}.brand p{font-size:11px;color:#7f8998;margin:2px 0 0}.top-actions{display:flex;gap:8px}.btn{border:1px solid #303846;background:#151a22;color:#fff;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer;transition:.15s}.btn:hover{background:#202733;border-color:#465062}.btn.primary{background:#5266e8;border-color:#6678f0}.btn.primary:hover{background:#6174f5}.workspace{display:grid;grid-template-columns:320px minmax(0,1fr) 300px;min-height:calc(100vh - 72px)}.side{background:#0c1016;border-right:1px solid #202632;padding:18px;overflow:auto}.right{border-right:0;border-left:1px solid #202632}.preview-wrap{padding:18px;background:#07090d;min-width:0}.preview{width:100%;height:calc(100vh - 108px);min-height:520px;border:1px solid #252c38;border-radius:16px;overflow:hidden;position:relative;background:#11151d;box-shadow:0 25px 80px #0008}.preview canvas{display:block;width:100%;height:100%}.overlay{position:absolute;left:14px;right:14px;top:14px;display:flex;justify-content:space-between;pointer-events:none}.chip{background:#0b0f16dd;border:1px solid #303847;border-radius:8px;padding:7px 9px;font-size:11px;color:#aab3c1;backdrop-filter:blur(10px)}.section{padding-bottom:17px;margin-bottom:17px;border-bottom:1px solid #202632}.section:last-child{border:0}.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#7f8998;font-weight:800;margin-bottom:11px}.field{margin-bottom:13px}.field:last-child{margin-bottom:0}.label{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#cbd1da;margin-bottom:6px}.value{color:#818da0;font-variant-numeric:tabular-nums}.text{width:100%;min-height:86px;resize:vertical;background:#080b10;color:#fff;border:1px solid #303846;border-radius:9px;padding:11px;outline:0}.text:focus,.select:focus{border-color:#6275ed}.select{width:100%;background:#11161e;color:#fff;border:1px solid #303846;border-radius:9px;padding:9px;outline:0}.range{width:100%;accent-color:#6678f0}.color-row{display:flex;gap:8px}.color{width:100%;height:38px;padding:3px;border-radius:8px;background:#080b10;border:1px solid #303846}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check{display:flex;align-items:center;gap:7px;background:#11161e;border:1px solid #29313e;border-radius:8px;padding:9px;font-size:11px;color:#aeb6c3}.check input{accent-color:#6678f0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.mini{width:100%;background:#11161e;color:#fff;border:1px solid #303846;border-radius:8px;padding:8px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.full{grid-column:1/-1}.hint{font-size:11px;color:#697485;line-height:1.5}.material-preview{height:70px;border-radius:10px;border:1px solid #303846;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:900;margin-bottom:10px;overflow:hidden}.tabs{display:flex;gap:5px;margin-bottom:12px}.tab{flex:1;border:1px solid #2b3340;background:#11161e;color:#8994a4;border-radius:7px;padding:7px;font-size:11px;cursor:pointer}.tab.active{background:#222a38;color:#fff;border-color:#46516a}.tab-content{display:none}.tab-content.active{display:block}@media(max-width:1100px){.workspace{grid-template-columns:290px minmax(0,1fr)}.right{display:none}}@media(max-width:720px){.top{height:62px;padding:0 12px}.workspace{display:block}.side{border:0;border-bottom:1px solid #202632}.preview-wrap{padding:10px}.preview{height:58vh;min-height:360px}.side{padding:14px}.left{display:block}.top-actions .back{display:none}}
 </style>
 </head>
 <body>
-<main>
-<div class="top"><div><h1>3D Text</h1><p>Type text and shape it into real 3D letters.</p></div><button class="btn" onclick="location.href='../'">← Back</button></div>
-<div class="layout">
-<div class="panel">
-<span class="badge">REAL 3D TEXT EDITOR</span>
-<textarea id="text" class="textarea" placeholder="Type your text...">IKIRUMI</textarea>
-<div class="control"><label>Font <span id="fontValue">Bold</span></label><select id="font" class="select"><option value="helvetiker_bold">Helvetiker Bold</option><option value="helvetiker_regular">Helvetiker Regular</option><option value="optimer_bold">Optimer Bold</option><option value="gentilis_bold">Gentilis Bold</option></select></div>
-<div class="section"><h2>Shape</h2>
-<div class="control"><label>Size <span id="sizeValue">1.00</span></label><input id="size" type="range" min=".2" max="2" step=".01" value="1"></div>
-<div class="control"><label>Depth / Extrusion <span id="depthValue">0.35</span></label><input id="depth" type="range" min="0" max="1.5" step=".01" value=".35"></div>
-<div class="control"><label>Corner smoothness <span id="bevelSegmentsValue">4</span></label><input id="bevelSegments" type="range" min="1" max="12" step="1" value="4"></div>
-<div class="control"><label>Corner roundness <span id="bevelSizeValue">0.08</span></label><input id="bevelSize" type="range" min="0" max=".3" step=".005" value=".08"></div>
-<div class="control"><label>Curve smoothness <span id="curveValue">6</span></label><input id="curve" type="range" min="1" max="12" step="1" value="6"></div>
+<div class="app">
+<header class="top">
+<div class="brand"><div class="logo">3D</div><div><h1>3D Text Studio</h1><p>Build real 3D text — no AI generation</p></div></div>
+<div class="top-actions"><button class="btn" id="reset">Reset</button><button class="btn" id="back">← Back</button></div>
+</header>
+<div class="workspace">
+<aside class="side left">
+<div class="section">
+<div class="section-title">Text</div>
+<textarea id="text" class="text">IKIRUMI</textarea>
 </div>
-<div class="section"><h2>Material</h2>
-<div class="control"><label>Color <span id="colorValue">#5c7cff</span></label><input id="color" type="color" value="#5c7cff"></div>
-<div class="control"><label>Metalness <span id="metalValue">0.35</span></label><input id="metal" type="range" min="0" max="1" step=".01" value=".35"></div>
-<div class="control"><label>Roughness <span id="roughValue">0.28</span></label><input id="rough" type="range" min="0" max="1" step=".01" value=".28"></div>
-<div class="control"><label>Clearcoat <span id="clearValue">0.20</span></label><input id="clear" type="range" min="0" max="1" step=".01" value=".2"></div>
+<div class="section">
+<div class="section-title">Font</div>
+<select id="font" class="select">
+<option value="helvetiker_bold">Helvetiker Bold</option><option value="helvetiker_regular">Helvetiker Regular</option><option value="optimer_bold">Optimer Bold</option><option value="gentilis_bold">Gentilis Bold</option>
+</select>
 </div>
-<div class="section"><h2>Look</h2>
-<div class="control"><label>Rotation X <span id="rxValue">0°</span></label><input id="rx" type="range" min="-180" max="180" value="0"></div>
-<div class="control"><label>Rotation Y <span id="ryValue">0°</span></label><input id="ry" type="range" min="-180" max="180" value="0"></div>
-<div class="control"><label>Rotation Z <span id="rzValue">0°</span></label><input id="rz" type="range" min="-180" max="180" value="0"></div>
-<div class="control"><label>Bevel enabled <span id="bevelEnabledValue">ON</span></label><input id="bevelEnabled" type="range" min="0" max="1" step="1" value="1"></div>
+<div class="section">
+<div class="section-title">Geometry</div>
+<div class="field"><div class="label">Size <span class="value" id="sizeV"></span></div><input class="range" id="size" type="range" min=".2" max="2.5" step=".01" value="1"></div>
+<div class="field"><div class="label">Extrusion depth <span class="value" id="depthV"></span></div><input class="range" id="depth" type="range" min="0" max="1.5" step=".01" value=".35"></div>
+<div class="field"><div class="label">Corner roundness <span class="value" id="bevelV"></span></div><input class="range" id="bevel" type="range" min="0" max=".3" step=".005" value=".08"></div>
+<div class="field"><div class="label">Corner smoothness <span class="value" id="segmentsV"></span></div><input class="range" id="segments" type="range" min="1" max="16" step="1" value="5"></div>
+<div class="field"><div class="label">Curve smoothness <span class="value" id="curveV"></span></div><input class="range" id="curve" type="range" min="1" max="16" step="1" value="8"></div>
+<div class="field"><div class="label">Letter spacing <span class="value" id="spacingV"></span></div><input class="range" id="spacing" type="range" min="-.3" max="1" step=".01" value="0"></div>
 </div>
-<div class="row"><button class="btn primary" id="reset">Reset</button><button class="btn" id="center">Center</button></div>
-<div class="downloads"><button class="btn" id="glb">Download GLB</button><button class="btn" id="image">Download 3D image</button></div>
-<div id="status" class="status">Loading font...</div>
-<div class="hint">This version is not AI generation. The text itself becomes actual extruded 3D geometry, with adjustable bevels, smooth corners, fonts, materials, lighting and rotation.</div>
+<div class="section">
+<div class="section-title">Alignment</div>
+<div class="grid2"><select id="align" class="select"><option value="left">Left</option><option value="center" selected>Center</option><option value="right">Right</option></select><select id="vAlign" class="select"><option value="center" selected>Center</option><option value="top">Top</option><option value="bottom">Bottom</option></select></div>
 </div>
-<div class="preview" id="preview"></div>
+</aside>
+
+<main class="preview-wrap">
+<div class="preview" id="preview">
+<div class="overlay"><span class="chip">LIVE 3D PREVIEW</span><span class="chip" id="fps">Drag • Scroll • Rotate</span></div>
 </div>
 </main>
+
+<aside class="side right">
+<div class="tabs"><button class="tab active" data-tab="material">Material</button><button class="tab" data-tab="transform">Transform</button><button class="tab" data-tab="scene">Scene</button></div>
+
+<div class="tab-content active" id="material">
+<div class="section">
+<div class="material-preview" id="matPreview">TEXT</div>
+<div class="section-title">Surface</div>
+<div class="field"><div class="label">Color <span class="value" id="colorV"></span></div><input class="color" id="color" type="color" value="#6377ff"></div>
+<div class="field"><div class="label">Metalness <span class="value" id="metalV"></span></div><input class="range" id="metal" type="range" min="0" max="1" step=".01" value=".35"></div>
+<div class="field"><div class="label">Roughness <span class="value" id="roughV"></span></div><input class="range" id="rough" type="range" min="0" max="1" step=".01" value=".28"></div>
+<div class="field"><div class="label">Clearcoat <span class="value" id="clearV"></span></div><input class="range" id="clear" type="range" min="0" max="1" step=".01" value=".2"></div>
+<div class="field"><div class="label">Opacity <span class="value" id="opacityV"></span></div><input class="range" id="opacity" type="range" min=".1" max="1" step=".01" value="1"></div>
+</div>
+<div class="section">
+<div class="section-title">Material preset</div>
+<select id="preset" class="select">
+<option value="custom">Custom</option><option value="chrome">Chrome</option><option value="gold">Gold</option><option value="plastic">Plastic</option><option value="glass">Glass</option><option value="rubber">Rubber</option><option value="neon">Neon</option>
+</select>
+</div>
+</div>
+
+<div class="tab-content" id="transform">
+<div class="section">
+<div class="section-title">Rotation</div>
+<div class="field"><div class="label">X <span class="value" id="rxV"></span></div><input class="range" id="rx" type="range" min="-180" max="180" value="0"></div>
+<div class="field"><div class="label">Y <span class="value" id="ryV"></span></div><input class="range" id="ry" type="range" min="-180" max="180" value="0"></div>
+<div class="field"><div class="label">Z <span class="value" id="rzV"></span></div><input class="range" id="rz" type="range" min="-180" max="180" value="0"></div>
+</div>
+<div class="section">
+<div class="section-title">Position</div>
+<div class="field"><div class="label">X <span class="value" id="pxV"></span></div><input class="range" id="px" type="range" min="-3" max="3" step=".01" value="0"></div>
+<div class="field"><div class="label">Y <span class="value" id="pyV"></span></div><input class="range" id="py" type="range" min="-3" max="3" step=".01" value="0"></div>
+<div class="field"><div class="label">Z <span class="value" id="pzV"></span></div><input class="range" id="pz" type="range" min="-3" max="3" step=".01" value="0"></div>
+</div>
+</div>
+
+<div class="tab-content" id="scene">
+<div class="section">
+<div class="section-title">Background</div>
+<div class="field"><div class="label">Color</div><input class="color" id="bg" type="color" value="#11151d"></div>
+<div class="checks"><label class="check"><input id="floor" type="checkbox" checked> Floor</label><label class="check"><input id="grid" type="checkbox"> Grid</label><label class="check"><input id="shadows" type="checkbox" checked> Shadows</label><label class="check"><input id="auto" type="checkbox"> Auto rotate</label></div>
+</div>
+<div class="section">
+<div class="section-title">Lighting</div>
+<div class="field"><div class="label">Key light <span class="value" id="lightV"></span></div><input class="range" id="light" type="range" min="0" max="5" step=".05" value="3"></div>
+<div class="field"><div class="label">Environment <span class="value" id="envV"></span></div><input class="range" id="env" type="range" min="0" max="4" step=".05" value="1.7"></div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-title">Export</div>
+<div class="actions"><button class="btn primary full" id="glb">Download GLB</button><button class="btn" id="png">PNG Render</button><button class="btn" id="save">Save Preset</button><button class="btn" id="load">Load Preset</button></div>
+<div class="hint" style="margin-top:10px">GLB contains the actual extruded 3D letters and material. PNG exports the current 3D view.</div>
+</div>
+<div id="status" class="status" style="font-size:11px;color:#697485">Loading 3D fonts…</div>
+</aside>
+</div>
+</div>
+
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
 import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js';
@@ -50,53 +113,92 @@ import {TextGeometry} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/
 import {FontLoader} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/FontLoader.js';
 import {GLTFExporter} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/exporters/GLTFExporter.js';
 
-const $=id=>document.getElementById(id),preview=$('preview'),status=$('status'),fontLoader=new FontLoader();
-const fontUrls={
-helvetiker_bold:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/helvetiker_bold.typeface.json',
-helvetiker_regular:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/helvetiker_regular.typeface.json',
-optimer_bold:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/optimer_bold.typeface.json',
-gentilis_bold:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/gentilis_bold.typeface.json'
+const $=id=>document.getElementById(id);
+const fontUrls={helvetiker_bold:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/helvetiker_bold.typeface.json',helvetiker_regular:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/helvetiker_regular.typeface.json',optimer_bold:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/optimer_bold.typeface.json',gentilis_bold:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/gentilis_bold.typeface.json'};
+const presets={
+chrome:{color:'#c9d3df',metal:1,rough:.12,clear:.65,opacity:1},
+gold:{color:'#e0a52a',metal:.9,rough:.2,clear:.45,opacity:1},
+plastic:{color:'#6377ff',metal:0,rough:.25,clear:.25,opacity:1},
+glass:{color:'#9dc8ff',metal:0,rough:.05,clear:.9,opacity:.42},
+rubber:{color:'#20242b',metal:0,rough:.9,clear:0,opacity:1},
+neon:{color:'#55e8ff',metal:.15,rough:.18,clear:.8,opacity:1}
 };
-let scene,camera,renderer,controls,textMesh,fontCache={};
+let scene,camera,renderer,controls,textGroup,floorMesh,gridHelper,keyLight,hemi,fonts={},busy=false;
 
-function setup(){
-scene=new THREE.Scene();scene.background=new THREE.Color(0x080b10);
-camera=new THREE.PerspectiveCamera(42,1,.01,100);camera.position.set(0,1.4,5);
-renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));preview.appendChild(renderer.domElement);
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,0,0);
-scene.add(new THREE.HemisphereLight(0xffffff,0x202838,2.2));
-const key=new THREE.DirectionalLight(0xffffff,4);key.position.set(3,6,4);scene.add(key);
-const fill=new THREE.DirectionalLight(0x8aa8ff,2);fill.position.set(-4,2,-3);scene.add(fill);
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.MeshStandardMaterial({color:0x11151d,roughness:.9}));floor.rotation.x=-Math.PI/2;floor.position.y=-1.3;scene.add(floor);
-new ResizeObserver(resize).observe(preview);resize();animate();loadFont();
+function init(){
+scene=new THREE.Scene();scene.background=new THREE.Color($('bg').value);
+camera=new THREE.PerspectiveCamera(42,1,.01,100);camera.position.set(0,1.2,5);
+renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;$('preview').appendChild(renderer.domElement);
+controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.07;
+hemi=new THREE.HemisphereLight(0xffffff,0x202838,val('env'));scene.add(hemi);
+keyLight=new THREE.DirectionalLight(0xffffff,val('light'));keyLight.position.set(3,6,4);keyLight.castShadow=true;keyLight.shadow.mapSize.set(2048,2048);scene.add(keyLight);
+const fill=new THREE.DirectionalLight(0x667fff,1.4);fill.position.set(-4,2,-4);scene.add(fill);
+floorMesh=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.MeshStandardMaterial({color:0x171c25,roughness:.92}));floorMesh.rotation.x=-Math.PI/2;floorMesh.position.y=-1.35;floorMesh.receiveShadow=true;scene.add(floorMesh);
+gridHelper=new THREE.GridHelper(20,20,0x343b49,0x202631);gridHelper.position.y=-1.34;gridHelper.visible=false;scene.add(gridHelper);
+new ResizeObserver(resize).observe($('preview'));resize();loadFont();
+requestAnimationFrame(loop);
 }
-function resize(){if(!renderer)return;const r=preview.getBoundingClientRect();camera.aspect=r.width/r.height;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false)}
-function loadFont(){const key=$('font').value;if(fontCache[key]){build();return}status.textContent='Loading font...';fontLoader.load(fontUrls[key],f=>{fontCache[key]=f;status.textContent='Ready';build()},undefined,e=>{status.textContent='Font failed to load';console.error(e)})}
 function val(id){return parseFloat($(id).value)}
+function resize(){if(!renderer)return;const r=$('preview').getBoundingClientRect();camera.aspect=r.width/r.height;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false)}
+function loadFont(){
+const key=$('font').value;if(fonts[key]){build();return}busy=true;$('status').textContent='Loading font…';new FontLoader().load(fontUrls[key],f=>{fonts[key]=f;busy=false;$('status').textContent='Ready';build()},undefined,()=>{$('status').textContent='Font could not be loaded';busy=false})
+}
+function material(){
+return new THREE.MeshPhysicalMaterial({color:$('color').value,metalness:val('metal'),roughness:val('rough'),clearcoat:val('clear'),clearcoatRoughness:.16,transparent:val('opacity')<1,opacity:val('opacity'),side:THREE.DoubleSide});
+}
+function makeLine(line,font,size,depth,bevel,segments,curve,spacing){
+const g=new THREE.Group();let x=0;
+for(const ch of line){
+if(ch===' '){x+=size*.45+spacing;continue}
+const geo=new TextGeometry(ch,{font,size,depth,curveSegments:curve,bevelEnabled:bevel>0,bevelThickness:bevel,bevelSize:bevel,bevelSegments:segments});
+geo.computeBoundingBox();const w=geo.boundingBox.max.x-geo.boundingBox.min.x;const m=new THREE.Mesh(geo,material());m.position.x=x;g.add(m);x+=w+spacing;
+}
+return {group:g,width:Math.max(0,x-spacing)};
+}
 function build(){
-if(!fontCache[$('font').value])return;
-if(textMesh){scene.remove(textMesh);textMesh.geometry.dispose();textMesh.material.dispose()}
-const bevel=$( 'bevelEnabled').value==='1',size=val('size'),depth=val('depth'),bevelSize=bevel?val('bevelSize'):0;
-const geo=new TextGeometry($('text').value||'TEXT',{font:fontCache[$('font').value],size,depth,curveSegments:val('curve'),bevelEnabled:bevel,bevelThickness:bevelSize,bevelSize,bevelSegments:val('bevelSegments')});
-geo.computeBoundingBox();const box=geo.boundingBox;const centerX=(box.max.x+box.min.x)/2;const centerY=(box.max.y+box.min.y)/2;geo.translate(-centerX,-centerY,0);
-const mat=new THREE.MeshPhysicalMaterial({color:$('color').value,metalness:val('metal'),roughness:val('rough'),clearcoat:val('clear'),clearcoatRoughness:.18});
-textMesh=new THREE.Mesh(geo,mat);textMesh.rotation.set(THREE.MathUtils.degToRad(val('rx')),THREE.MathUtils.degToRad(val('ry')),THREE.MathUtils.degToRad(val('rz')));scene.add(textMesh);center();updateLabels()
+if(busy||!fonts[$('font').value])return;
+if(textGroup){scene.remove(textGroup);textGroup.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()})}
+textGroup=new THREE.Group();
+const font=fonts[$('font').value],size=val('size'),depth=val('depth'),bevel=val('bevel'),segments=val('segments'),curve=val('curve'),spacing=val('spacing');
+const lines=($('text').value||'TEXT').split('\n'),lineGap=size*1.35;
+const made=lines.map(line=>makeLine(line,font,size,depth,bevel,segments,curve,spacing));
+const totalH=(lines.length-1)*lineGap;
+made.forEach((item,i)=>{let x=0;if($('align').value==='center')x=-item.width/2;else if($('align').value==='right')x=-item.width;item.group.position.x=x;item.group.position.y=totalH/2-i*lineGap;item.group.traverse(o=>o.castShadow=true);textGroup.add(item.group)});
+textGroup.position.set(val('px'),val('py'),val('pz'));textGroup.rotation.set(THREE.MathUtils.degToRad(val('rx')),THREE.MathUtils.degToRad(val('ry')),THREE.MathUtils.degToRad(val('rz')));
+scene.add(textGroup);centerCamera();updateLabels();updateMatPreview();
 }
-function center(){if(!textMesh)return;const box=new THREE.Box3().setFromObject(textMesh),size=box.getSize(new THREE.Vector3()),max=Math.max(size.x,size.y,size.z);camera.position.set(max*1.1,max*.65,max*2.1);controls.target.set(0,0,0);controls.update()}
-function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}
+function centerCamera(){
+if(!textGroup)return;const b=new THREE.Box3().setFromObject(textGroup),s=b.getSize(new THREE.Vector3()),m=Math.max(s.x,s.y,s.z,.5);camera.position.set(m*1.15,m*.65,m*2.1);controls.target.set(val('px'),val('py'),val('pz'));controls.update()
+}
+function applyMaterial(){
+if(!textGroup)return;textGroup.traverse(o=>{if(o.isMesh){o.material.dispose();o.material=material();o.castShadow=$('shadows').checked}});updateMatPreview()
+}
+function updateMatPreview(){$('matPreview').style.color=$('color').value;$('matPreview').style.textShadow=val('clear')>.3?'0 0 20px '+$('color').value:'none'}
 function updateLabels(){
-const map={size:'sizeValue',depth:'depthValue',bevelSegments:'bevelSegmentsValue',bevelSize:'bevelSizeValue',curve:'curveValue',metal:'metalValue',rough:'roughValue',clear:'clearValue',rx:'rxValue',ry:'ryValue',rz:'rzValue'};
-for(const [a,b] of Object.entries(map))$(b).textContent=$(a).value+(a.startsWith('rx')||a.startsWith('ry')||a.startsWith('rz')?'°':'');
-$('colorValue').textContent=$('color').value;$('bevelEnabledValue').textContent=$('bevelEnabled').value==='1'?'ON':'OFF';
+const labels={size:'sizeV',depth:'depthV',bevel:'bevelV',segments:'segmentsV',curve:'curveV',spacing:'spacingV',metal:'metalV',rough:'roughV',clear:'clearV',opacity:'opacityV',rx:'rxV',ry:'ryV',rz:'rzV',px:'pxV',py:'pyV',pz:'pzV',light:'lightV',env:'envV'};
+for(const [a,b] of Object.entries(labels))$(b).textContent=$(a).value+(['rx','ry','rz'].includes(a)?'°':'')}
+$('colorV').textContent=$('color').value;$('matPreview').textContent=($('text').value||'TEXT').split('\n')[0].slice(0,12)||'TEXT'
 }
-for(const id of ['text','font','size','depth','bevelSegments','bevelSize','curve','color','metal','rough','clear','rx','ry','rz','bevelEnabled'])$(id).addEventListener(id==='text'?'input':'input',()=>{if(id==='font')loadFont();else build()});
-$('reset').onclick=()=>{for(const [id,v] of Object.entries({size:1,depth:.35,bevelSegments:4,bevelSize:.08,curve:6,metal:.35,rough:.28,clear:.2,rx:0,ry:0,rz:0,bevelEnabled:1}))$(id).value=v;$('color').value='#5c7cff';build()};
-$('center').onclick=center;
-$('glb').onclick=()=>{if(!textMesh)return;new GLTFExporter().parse(textMesh,r=>download(new Blob([r],{type:'model/gltf-binary'}),'3d-text.glb'),{binary:true})};
-$('image').onclick=()=>renderer.domElement.toBlob(b=>download(b,'3d-text.png'),'image/png');
+function sceneUpdate(){
+scene.background=new THREE.Color($('bg').value);floorMesh.visible=$('floor').checked;gridHelper.visible=$('grid').checked;renderer.shadowMap.enabled=$('shadows').checked;keyLight.castShadow=$('shadows').checked;keyLight.intensity=val('light');hemi.intensity=val('env');if(textGroup)textGroup.traverse(o=>{if(o.isMesh)o.castShadow=$('shadows').checked});updateLabels()
+}
+function loop(t){requestAnimationFrame(loop);if($('auto').checked&&textGroup)textGroup.rotation.y+=.004;controls.update();renderer.render(scene,camera)}
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-setup();
+const geometryIds=['text','font','size','depth','bevel','segments','curve','spacing','align'];
+for(const id of geometryIds)$(id).addEventListener(id==='text'?'input':'change',()=>id==='font'?loadFont():build());
+for(const id of ['color','metal','rough','clear','opacity'])$(id).addEventListener('input',()=>{applyMaterial();updateLabels()});
+for(const id of ['rx','ry','rz','px','py','pz'])$(id).addEventListener('input',()=>{if(textGroup){textGroup.rotation.set(THREE.MathUtils.degToRad(val('rx')),THREE.MathUtils.degToRad(val('ry')),THREE.MathUtils.degToRad(val('rz')));textGroup.position.set(val('px'),val('py'),val('pz'));updateLabels()}});
+for(const id of ['bg','floor','grid','shadows','light','env','auto'])$(id).addEventListener('input',sceneUpdate);
+$('preset').onchange=()=>{const p=presets[$('preset').value];if(!p)return;for(const [k,v] of Object.entries(p))$(k).value=v;applyMaterial();updateLabels()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active')});
+$('center').onclick=centerCamera;
+$('reset').onclick=()=>{localStorage.removeItem('3d-text-studio-preset');location.reload()};
+$('back').onclick=()=>location.href='../';
+$('glb').onclick=()=>{if(!textGroup)return;new GLTFExporter().parse(textGroup,r=>download(new Blob([r],{type:'model/gltf-binary'}),'3d-text.glb'),{binary:true,trs:false})};
+$('png').onclick=()=>renderer.domElement.toBlob(b=>download(b,'3d-text-render.png'),'image/png');
+$('save').onclick=()=>{const ids=['text','font','size','depth','bevel','segments','curve','spacing','align','color','metal','rough','clear','opacity','rx','ry','rz','px','py','pz','bg','floor','grid','shadows','light','env'];const data={};ids.forEach(id=>data[id]=$(id).type==='checkbox'?$(id).checked:$(id).value);localStorage.setItem('3d-text-studio-preset',JSON.stringify(data));$('status').textContent='Preset saved on this device'};
+$('load').onclick=()=>{const d=JSON.parse(localStorage.getItem('3d-text-studio-preset')||'null');if(!d)return;$('text').value=d.text||'';for(const [id,v] of Object.entries(d))if($(id))$(id).type==='checkbox'?$(id).checked=v:$(id).value=v;if(fonts[$('font').value])build();else loadFont();sceneUpdate();$('status').textContent='Preset loaded'};
+init();
 </script>
 </body>
 </html>
