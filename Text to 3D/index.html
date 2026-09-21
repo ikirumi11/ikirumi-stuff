@@ -3,90 +3,99 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Text to 3D</title>
+<title>3D Text</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#07090d;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{width:min(1200px,100%);margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}.top h1{margin:0;font-size:clamp(28px,5vw,44px)}.top p{margin:5px 0;color:#8e98a8}.panel{background:#10141b;border:1px solid #2b323e;border-radius:18px;padding:20px}.prompt{width:100%;min-height:120px;resize:vertical;background:#090c11;color:#fff;border:1px solid #343c49;border-radius:12px;padding:15px;font:inherit}.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.btn{border:1px solid #3a4350;background:#1a2029;color:#fff;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer}.btn.primary{background:#263241}.btn:disabled{opacity:.45;cursor:not-allowed}.preview{margin-top:18px;height:min(62vw,560px);min-height:350px;background:#080b10;border:1px solid #2b323e;border-radius:16px;position:relative;overflow:hidden;display:grid;place-items:center}.preview canvas{width:100%;height:100%;display:block}.hint{color:#7f8998;font-size:13px;margin-top:10px;line-height:1.5}.downloads{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}.status{margin-top:12px;color:#aeb7c5;font-size:13px;min-height:20px}.error{color:#ff9d9d}.ok{color:#9fe0b2}.badge{display:inline-block;border:1px solid #39414d;border-radius:999px;padding:5px 9px;color:#aab4c2;font-size:11px;margin-bottom:10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px}@media(max-width:700px){main{padding:13px}.grid{grid-template-columns:1fr}.preview{min-height:300px}}
+*{box-sizing:border-box}body{margin:0;background:#07090d;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{width:min(1400px,100%);margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}.top h1{margin:0;font-size:clamp(28px,5vw,44px)}.top p{margin:5px 0;color:#8e98a8}.layout{display:grid;grid-template-columns:360px 1fr;gap:16px}.panel{background:#10141b;border:1px solid #2b323e;border-radius:18px;padding:18px}.preview{height:min(70vh,680px);min-height:420px;background:#080b10;border:1px solid #2b323e;border-radius:16px;overflow:hidden;position:relative}.preview canvas{width:100%;height:100%;display:block}.textarea,.select{width:100%;background:#090c11;color:#fff;border:1px solid #343c49;border-radius:10px;padding:12px;font:inherit}.textarea{min-height:90px;resize:vertical}.control{margin-top:14px}.control label{display:flex;justify-content:space-between;gap:10px;color:#c7ced8;font-size:13px;margin-bottom:7px}.control input[type=range]{width:100%}.control input[type=color]{width:100%;height:40px;background:#090c11;border:1px solid #343c49;border-radius:9px;padding:3px}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.btn{border:1px solid #3a4350;background:#1a2029;color:#fff;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}.btn.primary{background:#263241}.downloads{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.status{margin-top:10px;color:#aeb7c5;font-size:13px;min-height:20px}.badge{display:inline-block;border:1px solid #39414d;border-radius:999px;padding:5px 9px;color:#aab4c2;font-size:11px;margin-bottom:10px}.section{border-top:1px solid #252c36;margin-top:17px;padding-top:15px}.section h2{font-size:14px;margin:0 0 8px}.hint{color:#7f8998;font-size:12px;line-height:1.5;margin-top:10px}@media(max-width:850px){.layout{grid-template-columns:1fr}.preview{min-height:380px;height:55vh}main{padding:12px}}
 </style>
 </head>
 <body>
 <main>
-<div class="top"><div><h1>Text to 3D</h1><p>Turn a description into a real 3D model</p></div><button class="btn" onclick="location.href='../'">← Back</button></div>
+<div class="top"><div><h1>3D Text</h1><p>Type text and shape it into real 3D letters.</p></div><button class="btn" onclick="location.href='../'">← Back</button></div>
+<div class="layout">
 <div class="panel">
-<span class="badge">AI 3D MODEL GENERATOR</span>
-<textarea id="prompt" class="prompt" placeholder="Describe a model...&#10;&#10;Example: a low-poly red sports car with black wheels"></textarea>
-<div class="row">
-<button class="btn primary" id="generate">Generate 3D model</button>
-<button class="btn" id="sample">Example</button>
+<span class="badge">REAL 3D TEXT EDITOR</span>
+<textarea id="text" class="textarea" placeholder="Type your text...">IKIRUMI</textarea>
+<div class="control"><label>Font <span id="fontValue">Bold</span></label><select id="font" class="select"><option value="helvetiker_bold">Helvetiker Bold</option><option value="helvetiker_regular">Helvetiker Regular</option><option value="optimer_bold">Optimer Bold</option><option value="gentilis_bold">Gentilis Bold</option></select></div>
+<div class="section"><h2>Shape</h2>
+<div class="control"><label>Size <span id="sizeValue">1.00</span></label><input id="size" type="range" min=".2" max="2" step=".01" value="1"></div>
+<div class="control"><label>Depth / Extrusion <span id="depthValue">0.35</span></label><input id="depth" type="range" min="0" max="1.5" step=".01" value=".35"></div>
+<div class="control"><label>Corner smoothness <span id="bevelSegmentsValue">4</span></label><input id="bevelSegments" type="range" min="1" max="12" step="1" value="4"></div>
+<div class="control"><label>Corner roundness <span id="bevelSizeValue">0.08</span></label><input id="bevelSize" type="range" min="0" max=".3" step=".005" value=".08"></div>
+<div class="control"><label>Curve smoothness <span id="curveValue">6</span></label><input id="curve" type="range" min="1" max="12" step="1" value="6"></div>
 </div>
-<div id="status" class="status">Choose a description and generate a model.</div>
-<div class="preview" id="preview"><div id="empty">Your interactive 3D preview will appear here.</div></div>
-<div class="downloads">
-<button class="btn" id="glb" disabled>Download GLB</button>
-<button class="btn" id="fbx" disabled>Download FBX</button>
-<button class="btn" id="image" disabled>Download 3D image</button>
+<div class="section"><h2>Material</h2>
+<div class="control"><label>Color <span id="colorValue">#5c7cff</span></label><input id="color" type="color" value="#5c7cff"></div>
+<div class="control"><label>Metalness <span id="metalValue">0.35</span></label><input id="metal" type="range" min="0" max="1" step=".01" value=".35"></div>
+<div class="control"><label>Roughness <span id="roughValue">0.28</span></label><input id="rough" type="range" min="0" max="1" step=".01" value=".28"></div>
+<div class="control"><label>Clearcoat <span id="clearValue">0.20</span></label><input id="clear" type="range" min="0" max="1" step=".01" value=".2"></div>
 </div>
-<div class="hint">The preview is a real 3D scene that can be rotated and zoomed. GLB export is generated in the browser. FBX export requires a compatible converter/model backend, so the button becomes available only when one is connected.</div>
+<div class="section"><h2>Look</h2>
+<div class="control"><label>Rotation X <span id="rxValue">0°</span></label><input id="rx" type="range" min="-180" max="180" value="0"></div>
+<div class="control"><label>Rotation Y <span id="ryValue">0°</span></label><input id="ry" type="range" min="-180" max="180" value="0"></div>
+<div class="control"><label>Rotation Z <span id="rzValue">0°</span></label><input id="rz" type="range" min="-180" max="180" value="0"></div>
+<div class="control"><label>Bevel enabled <span id="bevelEnabledValue">ON</span></label><input id="bevelEnabled" type="range" min="0" max="1" step="1" value="1"></div>
+</div>
+<div class="row"><button class="btn primary" id="reset">Reset</button><button class="btn" id="center">Center</button></div>
+<div class="downloads"><button class="btn" id="glb">Download GLB</button><button class="btn" id="image">Download 3D image</button></div>
+<div id="status" class="status">Loading font...</div>
+<div class="hint">This version is not AI generation. The text itself becomes actual extruded 3D geometry, with adjustable bevels, smooth corners, fonts, materials, lighting and rotation.</div>
+</div>
+<div class="preview" id="preview"></div>
 </div>
 </main>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
 import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js';
+import {TextGeometry} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/geometries/TextGeometry.js';
+import {FontLoader} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/FontLoader.js';
 import {GLTFExporter} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/exporters/GLTFExporter.js';
 
-const preview=document.getElementById('preview'),status=document.getElementById('status'),prompt=document.getElementById('prompt'),generate=document.getElementById('generate'),glb=document.getElementById('glb'),fbx=document.getElementById('fbx'),image=document.getElementById('image');
-let scene,camera,renderer,controls,current=null,lastPrompt='';
+const $=id=>document.getElementById(id),preview=$('preview'),status=$('status'),fontLoader=new FontLoader();
+const fontUrls={
+helvetiker_bold:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/helvetiker_bold.typeface.json',
+helvetiker_regular:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/helvetiker_regular.typeface.json',
+optimer_bold:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/optimer_bold.typeface.json',
+gentilis_bold:'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/gentilis_bold.typeface.json'
+};
+let scene,camera,renderer,controls,textMesh,fontCache={};
 
 function setup(){
- scene=new THREE.Scene();scene.background=new THREE.Color(0x080b10);
- camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.set(3,2.4,4);
- renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));preview.innerHTML='';preview.appendChild(renderer.domElement);
- controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;
- scene.add(new THREE.HemisphereLight(0xffffff,0x303848,2));
- const key=new THREE.DirectionalLight(0xffffff,3);key.position.set(4,6,5);scene.add(key);
- const floor=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.MeshStandardMaterial({color:0x161b24,roughness:.8}));floor.rotation.x=-Math.PI/2;floor.position.y=-1.05;scene.add(floor);
- addResize();animate();
+scene=new THREE.Scene();scene.background=new THREE.Color(0x080b10);
+camera=new THREE.PerspectiveCamera(42,1,.01,100);camera.position.set(0,1.4,5);
+renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));preview.appendChild(renderer.domElement);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,0,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0x202838,2.2));
+const key=new THREE.DirectionalLight(0xffffff,4);key.position.set(3,6,4);scene.add(key);
+const fill=new THREE.DirectionalLight(0x8aa8ff,2);fill.position.set(-4,2,-3);scene.add(fill);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.MeshStandardMaterial({color:0x11151d,roughness:.9}));floor.rotation.x=-Math.PI/2;floor.position.y=-1.3;scene.add(floor);
+new ResizeObserver(resize).observe(preview);resize();animate();loadFont();
 }
-function addResize(){const r=preview.getBoundingClientRect();camera.aspect=r.width/r.height;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false)}
-new ResizeObserver(addResize).observe(preview);
-function material(c){return new THREE.MeshStandardMaterial({color:c,roughness:.55,metalness:.12})}
-function makeModel(text){
- if(current){scene.remove(current);current.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()})}
- const g=new THREE.Group();const t=text.toLowerCase();
- let type=t.includes('car')?'car':t.includes('tree')?'tree':t.includes('house')?'house':t.includes('robot')?'robot':t.includes('chair')?'chair':t.includes('sword')?'sword':'object';
- if(type==='car'){
-  const body=new THREE.Mesh(new THREE.BoxGeometry(2.5,.55,1.25),material(0xc62828));body.position.y=-.3;g.add(body);
-  const roof=new THREE.Mesh(new THREE.BoxGeometry(1.35,.55,1.05),material(0xb71c1c));roof.position.set(.15,.22,0);g.add(roof);
-  for(const x of [-.8,.8])for(const z of [-.68,.68]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,.18,24),material(0x17191e));w.rotation.z=Math.PI/2;w.position.set(x,-.7,z);g.add(w)}
- }else if(type==='tree'){
-  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,1.5,12),material(0x6d4328));trunk.position.y=-.25;g.add(trunk);
-  const crown=new THREE.Mesh(new THREE.SphereGeometry(1.05,20,14),material(0x26753b));crown.position.y=.8;g.add(crown);
- }else if(type==='house'){
-  const base=new THREE.Mesh(new THREE.BoxGeometry(2.2,1.4,1.8),material(0xd19a63));base.position.y=-.35;g.add(base);
-  const roof=new THREE.Mesh(new THREE.ConeGeometry(1.65,1.15,4),material(0x7b2525));roof.rotation.y=Math.PI/4;roof.position.y=.9;g.add(roof);
- }else if(type==='robot'){
-  const b=new THREE.Mesh(new THREE.BoxGeometry(1.25,1.5,.8),material(0x788899));b.position.y=.1;g.add(b);
-  const h=new THREE.Mesh(new THREE.BoxGeometry(1,.75,.75),material(0x9aa7b5));h.position.y=1.2;g.add(h);
-  for(const x of [-.65,.65]){const a=new THREE.Mesh(new THREE.BoxGeometry(.3,1.25,.3),material(0x687482));a.position.set(x,.05,0);g.add(a)}
- }else if(type==='chair'){
-  const m=material(0x5b3a26);const seat=new THREE.Mesh(new THREE.BoxGeometry(1.5,.2,1.5),m);seat.position.y=-.1;g.add(seat);const back=new THREE.Mesh(new THREE.BoxGeometry(1.5,1.5,.18),m);back.position.set(0,.65,-.65);g.add(back);for(const x of [-.55,.55])for(const z of [-.55,.55]){const l=new THREE.Mesh(new THREE.BoxGeometry(.18,1,.18),m);l.position.set(x,-.6,z);g.add(l)}
- }else if(type==='sword'){
-  const blade=new THREE.Mesh(new THREE.BoxGeometry(.22,2.8,.08),material(0xbec9d4));blade.position.y=.8;g.add(blade);const guard=new THREE.Mesh(new THREE.BoxGeometry(1,.14,.16),material(0xc99b35));guard.position.y=-.65;g.add(guard);const grip=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,.75,12),material(0x4b2b1b));grip.position.y=-1.05;g.add(grip);
- }else{
-  const geo=new THREE.IcosahedronGeometry(1,2);const mesh=new THREE.Mesh(geo,material(0x586ee8));g.add(mesh);
- }
- current=g;scene.add(g);center(g);return g;
+function resize(){if(!renderer)return;const r=preview.getBoundingClientRect();camera.aspect=r.width/r.height;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false)}
+function loadFont(){const key=$('font').value;if(fontCache[key]){build();return}status.textContent='Loading font...';fontLoader.load(fontUrls[key],f=>{fontCache[key]=f;status.textContent='Ready';build()},undefined,e=>{status.textContent='Font failed to load';console.error(e)})}
+function val(id){return parseFloat($(id).value)}
+function build(){
+if(!fontCache[$('font').value])return;
+if(textMesh){scene.remove(textMesh);textMesh.geometry.dispose();textMesh.material.dispose()}
+const bevel=$( 'bevelEnabled').value==='1',size=val('size'),depth=val('depth'),bevelSize=bevel?val('bevelSize'):0;
+const geo=new TextGeometry($('text').value||'TEXT',{font:fontCache[$('font').value],size,depth,curveSegments:val('curve'),bevelEnabled:bevel,bevelThickness:bevelSize,bevelSize,bevelSegments:val('bevelSegments')});
+geo.computeBoundingBox();const box=geo.boundingBox;const centerX=(box.max.x+box.min.x)/2;const centerY=(box.max.y+box.min.y)/2;geo.translate(-centerX,-centerY,0);
+const mat=new THREE.MeshPhysicalMaterial({color:$('color').value,metalness:val('metal'),roughness:val('rough'),clearcoat:val('clear'),clearcoatRoughness:.18});
+textMesh=new THREE.Mesh(geo,mat);textMesh.rotation.set(THREE.MathUtils.degToRad(val('rx')),THREE.MathUtils.degToRad(val('ry')),THREE.MathUtils.degToRad(val('rz')));scene.add(textMesh);center();updateLabels()
 }
-function center(g){const box=new THREE.Box3().setFromObject(g),size=box.getSize(new THREE.Vector3()),c=box.getCenter(new THREE.Vector3());g.position.sub(c);const s=Math.max(size.x,size.y,size.z);camera.position.set(s*1.8,s*1.25,s*2.2);controls.target.set(0,0,0);controls.update()}
-function animate(){requestAnimationFrame(animate);if(controls)controls.update();if(renderer)renderer.render(scene,camera)}
-function exportGLB(){
- if(!current)return;
- const exporter=new GLTFExporter();exporter.parse(current,r=>{const blob=new Blob([r],{type:'model/gltf-binary'});download(blob,'text-to-3d.glb')},{binary:true});
+function center(){if(!textMesh)return;const box=new THREE.Box3().setFromObject(textMesh),size=box.getSize(new THREE.Vector3()),max=Math.max(size.x,size.y,size.z);camera.position.set(max*1.1,max*.65,max*2.1);controls.target.set(0,0,0);controls.update()}
+function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}
+function updateLabels(){
+const map={size:'sizeValue',depth:'depthValue',bevelSegments:'bevelSegmentsValue',bevelSize:'bevelSizeValue',curve:'curveValue',metal:'metalValue',rough:'roughValue',clear:'clearValue',rx:'rxValue',ry:'ryValue',rz:'rzValue'};
+for(const [a,b] of Object.entries(map))$(b).textContent=$(a).value+(a.startsWith('rx')||a.startsWith('ry')||a.startsWith('rz')?'°':'');
+$('colorValue').textContent=$('color').value;$('bevelEnabledValue').textContent=$('bevelEnabled').value==='1'?'ON':'OFF';
 }
+for(const id of ['text','font','size','depth','bevelSegments','bevelSize','curve','color','metal','rough','clear','rx','ry','rz','bevelEnabled'])$(id).addEventListener(id==='text'?'input':'input',()=>{if(id==='font')loadFont();else build()});
+$('reset').onclick=()=>{for(const [id,v] of Object.entries({size:1,depth:.35,bevelSegments:4,bevelSize:.08,curve:6,metal:.35,rough:.28,clear:.2,rx:0,ry:0,rz:0,bevelEnabled:1}))$(id).value=v;$('color').value='#5c7cff';build()};
+$('center').onclick=center;
+$('glb').onclick=()=>{if(!textMesh)return;new GLTFExporter().parse(textMesh,r=>download(new Blob([r],{type:'model/gltf-binary'}),'3d-text.glb'),{binary:true})};
+$('image').onclick=()=>renderer.domElement.toBlob(b=>download(b,'3d-text.png'),'image/png');
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-generate.onclick=()=>{lastPrompt=prompt.value.trim();if(!lastPrompt){status.textContent='Enter a description first.';status.className='status error';return}makeModel(lastPrompt);status.textContent='3D preview generated. This demo currently creates a procedural model from the description. Connect a real text-to-3D AI endpoint to generate detailed arbitrary meshes.';status.className='status ok';glb.disabled=false;image.disabled=false;fbx.disabled=true};
-glb.onclick=exportGLB;
-image.onclick=()=>{if(renderer){renderer.render(scene,camera);renderer.domElement.toBlob(b=>download(b,'text-to-3d.png'),'image/png')}}
-document.getElementById('sample').onclick=()=>{prompt.value='a futuristic blue sports car with black wheels';prompt.focus()};
 setup();
 </script>
 </body>
