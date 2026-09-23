@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Random Media</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080a0f;color:#f4f7fb;font-family:system-ui,sans-serif;padding:18px}.wrap{max-width:1100px;margin:auto}.top{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:16px}.title h1{margin:0;font-size:30px}.sub{color:#8993a2;font-size:12px;margin-top:4px}.pill{background:#11151d;border:1px solid #303744;border-radius:999px;padding:8px 12px;font-size:11px}.panel{background:#10141b;border:1px solid #292f39;border-radius:18px;padding:15px;margin-bottom:14px}.controls{display:grid;grid-template-columns:1fr auto;gap:9px}.select{width:100%;background:#090d13;color:#fff;border:1px solid #343c49;border-radius:11px;padding:11px;font:inherit}.btn{border:1px solid #394250;background:#1a202a;color:#fff;border-radius:11px;padding:11px 16px;font-weight:750;cursor:pointer}.primary{background:#dce6f2;color:#080b10}.random{width:100%;font-size:16px;padding:14px;margin-top:10px}.layout{display:grid;grid-template-columns:310px 1fr;gap:14px}.list{max-height:65vh;overflow:auto}.item{padding:9px 10px;border-bottom:1px solid #202630;font-size:12px;word-break:break-word}.folder{color:#aab7c8}.file{color:#e7edf5}.viewer{min-height:65vh;display:flex;align-items:center;justify-content:center;background:#090d13;border-radius:13px;overflow:hidden;position:relative}.viewer img,.viewer video{max-width:100%;max-height:65vh;display:block}.empty{color:#778294;text-align:center;padding:30px}.path{font-size:11px;color:#8e99a8;margin-top:8px;word-break:break-all}.status{font-size:11px;color:#8e99a8;margin-top:9px;min-height:15px}@media(max-width:760px){.layout{grid-template-columns:1fr}.list{max-height:30vh}.viewer{min-height:48vh}.viewer img,.viewer video{max-height:48vh}.controls{grid-template-columns:1fr}.top{align-items:flex-start}.title h1{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+<div class="title"><h1>Random Media</h1><div class="sub">Choose a folder, scan everything inside it, then pick a random image or video.</div></div>
+<div class="pill" id="count">0 media</div>
+</div>
+<div class="panel">
+<div class="controls">
+<select class="select" id="folder"><option>Loading folders…</option></select>
+<button class="btn" id="load">Load folder</button>
+</div>
+<button class="btn primary random" id="random">Random</button>
+<div class="path" id="path"></div>
+<div class="status" id="status">Loading folders from ikirumi11/ikirumi-stuff…</div>
+</div>
+<div class="layout">
+<div class="panel list" id="list"><div class="empty">Choose a folder to see its files.</div></div>
+<div class="panel viewer" id="viewer"><div class="empty">Press Random to show a random image or video.</div></div>
+</div>
+</div>
+<script>
+const owner='ikirumi11',repo='ikirumi-stuff',branch='main';
+const $=id=>document.getElementById(id);
+let files=[],folders=[];
+const imageExt=['jpg','jpeg','png','gif','webp','bmp','svg','avif'];
+const videoExt=['mp4','webm','mov','m4v','ogg'];
+function ext(path){return path.split('.').pop().toLowerCase()}
+function isMedia(path){const e=ext(path);return imageExt.includes(e)||videoExt.includes(e)}
+function raw(path){return 'https://raw.githubusercontent.com/'+owner+'/'+repo+'/'+branch+'/'+path.split('/').map(encodeURIComponent).join('/')}
+function api(path=''){return 'https://api.github.com/repos/'+owner+'/'+repo+'/git/trees/'+branch+'?recursive=1'}
+function status(t){$('status').textContent=t}
+async function loadTree(){
+try{
+const r=await fetch(api());
+if(!r.ok)throw new Error('GitHub API error');
+const j=await r.json();
+const tree=j.tree||[];
+const top=new Set();
+tree.forEach(x=>{if(x.type==='tree'){const p=x.path.split('/');if(p.length===1)top.add(x.path)}});
+folders=[...top].sort((a,b)=>a.localeCompare(b));
+$('folder').innerHTML=folders.length?folders.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join(''):'<option>No folders found</option>';
+status('Choose a folder. Subfolders are scanned automatically.');
+}catch(e){$('folder').innerHTML='<option>Could not load folders</option>';status('Could not load the GitHub folder list.')}
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function loadFolder(){
+const root=$('folder').value;
+if(!root||root==='Could not load folders'||root==='No folders found')return;
+status('Scanning '+root+' and all folders inside it…');
+try{
+const r=await fetch(api());
+if(!r.ok)throw new Error();
+const j=await r.json();
+files=(j.tree||[]).filter(x=>x.type==='blob'&&x.path===root||x.type==='blob'&&x.path.startsWith(root+'/')).filter(x=>isMedia(x.path));
+files.sort((a,b)=>a.path.localeCompare(b.path));
+$('count').textContent=files.length+' media';
+$('path').textContent=root+' · includes all nested folders';
+$('list').innerHTML=files.length?files.map(x=>'<div class="item file">'+escapeHtml(x.path.slice(root.length+1))+'</div>').join(''):'<div class="empty">No supported images or videos were found.</div>';
+status(files.length?'Loaded '+files.length+' images/videos. Press Random.':'No supported media found.');
+if(files.length)showRandom();
+}catch(e){status('Could not scan this folder.')}
+}
+function showRandom(){
+if(!files.length){status('Load a folder with images or videos first.');return}
+const f=files[Math.floor(Math.random()*files.length)];
+const url=raw(f.path),e=ext(f.path);
+$('path').textContent=f.path;
+$('viewer').innerHTML='';
+if(videoExt.includes(e)){
+const v=document.createElement('video');v.src=url;v.controls=true;v.autoplay=true;v.loop=true;v.playsInline=true;$('viewer').appendChild(v);
+}else{
+const i=document.createElement('img');i.src=url;i.alt=f.path;i.loading='eager';$('viewer').appendChild(i);
+}
+status('Randomly selected '+f.path);
+}
+$('load').onclick=loadFolder;
+$('random').onclick=showRandom;
+loadTree();
+</script>
+</body>
+</html>
