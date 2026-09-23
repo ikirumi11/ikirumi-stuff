@@ -10,82 +10,50 @@
 </head>
 <body>
 <div class="wrap">
-<div class="top">
-<div class="title"><h1>Random Media</h1><div class="sub">Choose a folder, scan everything inside it, then pick a random image or video.</div></div>
-<div class="pill" id="count">0 media</div>
-</div>
+<div class="top"><div class="title"><h1>Random Media</h1><div class="sub">Choose a folder on your device. Images and videos inside all subfolders are included.</div></div><div class="pill" id="count">0 media</div></div>
 <div class="panel">
-<div class="controls">
-<select class="select" id="folder"><option>Loading folders…</option></select>
-<button class="btn" id="load">Load folder</button>
-</div>
+<div class="controls"><button class="btn primary" id="choose">Choose device folder</button><button class="btn" id="clear">Clear</button></div>
 <button class="btn primary random" id="random">Random</button>
-<div class="path" id="path"></div>
-<div class="status" id="status">Loading folders from ikirumi11/ikirumi-stuff…</div>
+<div class="path" id="path"></div><div class="status" id="status">Choose a folder to begin.</div>
 </div>
-<div class="layout">
-<div class="panel list" id="list"><div class="empty">Choose a folder to see its files.</div></div>
-<div class="panel viewer" id="viewer"><div class="empty">Press Random to show a random image or video.</div></div>
-</div>
+<div class="layout"><div class="panel list" id="list"><div class="empty">No folder selected.</div></div><div class="panel viewer" id="viewer"><div class="empty">Your random image or video will appear here.</div></div></div>
 </div>
 <script>
-const owner='ikirumi11',repo='ikirumi-stuff',branch='main';
 const $=id=>document.getElementById(id);
-let files=[],folders=[];
 const imageExt=['jpg','jpeg','png','gif','webp','bmp','svg','avif'];
-const videoExt=['mp4','webm','mov','m4v','ogg'];
-function ext(path){return path.split('.').pop().toLowerCase()}
-function isMedia(path){const e=ext(path);return imageExt.includes(e)||videoExt.includes(e)}
-function raw(path){return 'https://raw.githubusercontent.com/'+owner+'/'+repo+'/'+branch+'/'+path.split('/').map(encodeURIComponent).join('/')}
-function api(path=''){return 'https://api.github.com/repos/'+owner+'/'+repo+'/git/trees/'+branch+'?recursive=1'}
-function status(t){$('status').textContent=t}
-async function loadTree(){
-try{
-const r=await fetch(api());
-if(!r.ok)throw new Error('GitHub API error');
-const j=await r.json();
-const tree=j.tree||[];
-const top=new Set();
-tree.forEach(x=>{if(x.type==='tree'){const p=x.path.split('/');if(p.length===1)top.add(x.path)}});
-folders=[...top].sort((a,b)=>a.localeCompare(b));
-$('folder').innerHTML=folders.length?folders.map(x=>'<option value="'+escapeHtml(x)+'">'+escapeHtml(x)+'</option>').join(''):'<option>No folders found</option>';
-status('Choose a folder. Subfolders are scanned automatically.');
-}catch(e){$('folder').innerHTML='<option>Could not load folders</option>';status('Could not load the GitHub folder list.')}
-}
-function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function loadFolder(){
-const root=$('folder').value;
-if(!root||root==='Could not load folders'||root==='No folders found')return;
-status('Scanning '+root+' and all folders inside it…');
-try{
-const r=await fetch(api());
-if(!r.ok)throw new Error();
-const j=await r.json();
-files=(j.tree||[]).filter(x=>x.type==='blob'&&x.path===root||x.type==='blob'&&x.path.startsWith(root+'/')).filter(x=>isMedia(x.path));
-files.sort((a,b)=>a.path.localeCompare(b.path));
+const videoExt=['mp4','webm','mov','m4v','ogg','mkv'];
+let files=[];
+function ext(n){return n.split('.').pop().toLowerCase()}
+function isMedia(f){return imageExt.includes(ext(f.name))||videoExt.includes(ext(f.name))}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function chooseFolder(){
+const input=document.createElement('input');
+input.type='file';input.webkitdirectory=true;input.multiple=true;
+input.onchange=()=>{
+files=[...input.files].filter(isMedia);
 $('count').textContent=files.length+' media';
-$('path').textContent=root+' · includes all nested folders';
-$('list').innerHTML=files.length?files.map(x=>'<div class="item file">'+escapeHtml(x.path.slice(root.length+1))+'</div>').join(''):'<div class="empty">No supported images or videos were found.</div>';
-status(files.length?'Loaded '+files.length+' images/videos. Press Random.':'No supported media found.');
-if(files.length)showRandom();
-}catch(e){status('Could not scan this folder.')}
+if(!files.length){$('list').innerHTML='<div class="empty">No supported images or videos found.</div>';$('status').textContent='No supported media found.';return}
+const root=input.files[0]?.webkitRelativePath?.split('/')[0]||'Selected folder';
+$('path').textContent=root+' · all nested folders included';
+$('list').innerHTML=files.map(f=>'<div class="item file">'+esc(f.webkitRelativePath||f.name)+'</div>').join('');
+$('status').textContent='Loaded '+files.length+' images/videos from your device.';
+showRandom();
+};
+input.click();
 }
 function showRandom(){
-if(!files.length){status('Load a folder with images or videos first.');return}
-const f=files[Math.floor(Math.random()*files.length)];
-const url=raw(f.path),e=ext(f.path);
-$('path').textContent=f.path;
+if(!files.length){$('status').textContent='Choose a device folder first.';return}
+const f=files[Math.floor(Math.random()*files.length)],url=URL.createObjectURL(f),e=ext(f.name);
 $('viewer').innerHTML='';
-if(videoExt.includes(e)){
-const v=document.createElement('video');v.src=url;v.controls=true;v.autoplay=true;v.loop=true;v.playsInline=true;$('viewer').appendChild(v);
-}else{
-const i=document.createElement('img');i.src=url;i.alt=f.path;i.loading='eager';$('viewer').appendChild(i);
+if(videoExt.includes(e)){const v=document.createElement('video');v.src=url;v.controls=true;v.autoplay=true;v.loop=true;v.playsInline=true;$('viewer').appendChild(v)}
+else{const i=document.createElement('img');i.src=url;i.alt=f.name;$('viewer').appendChild(i)}
+$('path').textContent=f.webkitRelativePath||f.name;
+$('status').textContent='Randomly selected '+f.name;
 }
-status('Randomly selected '+f.path);
-}
-$('load').onclick=loadFolder;
+function clearAll(){files=[];$('count').textContent='0 media';$('path').textContent='';$('status').textContent='Choose a folder to begin.';$('list').innerHTML='<div class="empty">No folder selected.</div>';$('viewer').innerHTML='<div class="empty">Your random image or video will appear here.</div>'}
+$('choose').onclick=chooseFolder;
 $('random').onclick=showRandom;
-loadTree();
+$('clear').onclick=clearAll;
 </script>
 </body>
 </html>
