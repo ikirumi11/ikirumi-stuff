@@ -29,17 +29,18 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 const $=x=>document.getElementById(x);
-const LOBBY='ikirumi-public-peer-chat-v1';
+const BOOTSTRAP='ikirumi-bootstrap-peer-v2';
 let peer=null,connections=new Map(),knownPeers=new Set(),mediaCalls=new Map(),localStream=null,starting=false;
 const name=()=>($('name').value.trim()||'Anonymous').slice(0,30);
 function status(t){$('status').textContent=t}
 function say(author,text,media=null,mine=false){const d=document.createElement('div');d.className='msg'+(mine?' mine':'');const meta=document.createElement('div');meta.className='meta';meta.textContent=mine?'You':author;d.appendChild(meta);if(media){const el=media.type.startsWith('image/')?document.createElement('img'):document.createElement('video');el.className='media';el.src=media.url;if(el.tagName==='VIDEO'){el.controls=true;el.playsInline=true}d.appendChild(el)}else d.appendChild(document.createTextNode(text));$('messages').appendChild(d);$('messages').scrollTop=$('messages').scrollHeight}
 function sendTo(c,data){try{if(c&&c.open)c.send(data)}catch{}}
 function broadcast(data,except=''){connections.forEach((c,id)=>{if(id!==except)sendTo(c,data)})}
-function remember(id){if(id&&id!==peer?.id&&id!==LOBBY)knownPeers.add(id)}
+function remember(id){if(id&&id!==peer?.id&&id!==BOOTSTRAP)knownPeers.add(id)}
 function connectTo(id){if(!id||id===peer?.id)return;if(connections.has(id)&&connections.get(id).open)return;if(!peer||peer.destroyed)return;remember(id);const c=peer.connect(id,{reliable:true,metadata:{name:name()}});setupConn(c)}
 function connectKnown(){[...knownPeers].forEach(connectTo)}
 function announceSelf(){broadcast({kind:'peer-list',peers:[peer.id,...knownPeers]})}
+function announceBootstrap(){try{const b=peer.connect(BOOTSTRAP,{reliable:true});b.on('open',()=>{b.send({kind:'bootstrap',id:peer.id,peers:[...knownPeers]})});b.on('data',x=>{if(x?.kind==='bootstrap-list'){(x.peers||[]).forEach(remember);connectKnown();announceSelf()}})}catch{}}
 function setupConn(c){
 if(!c||c.peer===peer?.id)return;
 const old=connections.get(c.peer);
@@ -53,6 +54,7 @@ c.on('error',()=>{if(connections.get(c.peer)===c)connections.delete(c.peer);setT
 }
 function receive(x,from){
 if(!x||typeof x!=='object')return;
+if(x.kind==='bootstrap'){(x.peers||[]).forEach(remember);remember(x.id);sendTo(connections.get(from),{kind:'bootstrap-list',peers:[peer.id,...knownPeers]});connectKnown();return}
 if(x.kind==='hello'){remember(x.id);(x.peers||[]).forEach(remember);connectKnown();sendTo(connections.get(from),{kind:'peer-list',peers:[peer.id,...knownPeers]});return}
 if(x.kind==='peer-list'){(x.peers||[]).forEach(remember);connectKnown();return}
 if(x.kind==='text'){say(x.name,x.text);broadcast(x,from);return}
@@ -64,7 +66,7 @@ if(starting)return;
 starting=true;
 try{if(peer&&!peer.destroyed)peer.destroy()}catch{}
 peer=new Peer();
-peer.on('open',id=>{starting=false;status('Finding everyone automatically…');connectTo(LOBBY);connectKnown()});
+peer.on('open',id=>{starting=false;status('Finding peers automatically…');announceBootstrap();connectKnown()});
 peer.on('connection',setupConn);
 peer.on('call',async call=>{
 if(!localStream){try{localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true})}catch{return}}
@@ -74,7 +76,7 @@ peer.on('disconnected',()=>{status('Signaling connection lost · reconnecting…
 peer.on('close',()=>{starting=false;setTimeout(makePeer,1500)});
 peer.on('error',e=>{
 starting=false;
-if(e.type==='peer-unavailable'||e.type==='network'||e.type==='server-error'||e.type==='socket-error'||e.type==='socket-closed'){status('Peer unavailable · retrying automatically…');setTimeout(()=>{if(peer&&!peer.destroyed){try{peer.reconnect()}catch{}}connectTo(LOBBY);connectKnown()},2000);return}
+if(e.type==='peer-unavailable'||e.type==='network'||e.type==='server-error'||e.type==='socket-error'||e.type==='socket-closed'){status('Peer unavailable · retrying automatically…');setTimeout(()=>{if(peer&&!peer.destroyed){try{peer.reconnect()}catch{}}announceBootstrap();connectKnown()},2000);return}
 status('Reconnecting automatically…');
 if(e.type!=='unavailable-id')setTimeout(makePeer,1800);
 });
@@ -85,7 +87,7 @@ $('input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.pre
 $('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(f.size>8*1024*1024){status('Media is limited to 8 MB per file');e.target.value='';return}const buf=await f.arrayBuffer();const x={kind:'media',name:name(),type:f.type,data:buf};broadcast(x);say('', '',{type:f.type,url:URL.createObjectURL(new Blob([buf],{type:f.type}))},true);status('Media sent directly to connected peers');e.target.value=''};
 $('call').onclick=async()=>{try{if(!localStream)localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});connections.forEach(c=>{if(c.open){const call=peer.call(c.peer,localStream);showCall(call)}});status('Video call started with connected peers')}catch{status('Camera/microphone permission was not granted')}};
 $('hang').onclick=()=>{mediaCalls.forEach(c=>c.close());mediaCalls.clear();if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}$('videos').innerHTML='';status('Call ended')};
-setInterval(()=>{if(peer&&!peer.destroyed){if(peer.disconnected){try{peer.reconnect()}catch{}}connectTo(LOBBY);connectKnown()}},5000);
+setInterval(()=>{if(peer&&!peer.destroyed){if(peer.disconnected){try{peer.reconnect()}catch{}}announceBootstrap();connectKnown()}},5000);
 setInterval(updateState,2000);
 makePeer();
 </script>
