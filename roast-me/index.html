@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roast Me</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#080a0f;color:#fff}body{display:grid;place-items:center;padding:20px}.wrap{width:min(720px,100%)}.panel{background:#11151c;border:1px solid #292f39;border-radius:24px;padding:clamp(24px,6vw,48px);box-shadow:0 24px 80px #0008}.tag{display:inline-block;padding:6px 10px;border:1px solid #39414d;border-radius:999px;color:#9ea8b7;font-size:12px;font-weight:700;letter-spacing:.08em}.title{font-size:clamp(38px,8vw,72px);line-height:.95;margin:18px 0 12px;letter-spacing:-.05em}.sub{color:#929cab;margin:0 0 28px;line-height:1.6}.row{display:flex;gap:10px}.row input{flex:1;min-width:0;padding:15px 16px;border:1px solid #39414d;background:#0b0f15;color:#fff;border-radius:13px;font-size:16px;outline:none}.row input:focus{border-color:#687587}.row button,.again{border:1px solid #4a5564;background:#202936;color:#fff;border-radius:13px;padding:0 20px;font-weight:800;cursor:pointer}.row button:hover,.again:hover{transform:translateY(-1px);background:#293443}.roast{display:none;margin-top:22px;padding:22px;border:1px solid #343d49;background:#0b0f15;border-radius:17px}.roast.show{display:block;animation:pop .25s ease}.roast small{color:#707b8b;font-weight:700}.roastText{font-size:clamp(21px,4vw,31px);line-height:1.3;font-weight:800;margin:10px 0 18px}.again{padding:11px 15px}@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}@media(max-width:560px){.row{flex-direction:column}.row button{height:50px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<section class="panel">
+<span class="tag">ROAST ENGINE</span>
+<h1 class="title">Give me a name.<br>I'll do the rest.</h1>
+<p class="sub">Personalized, savage, ridiculous roasts generated right in your browser. No account. No server. Just emotional damage.</p>
+<div class="row">
+<input id="name" maxlength="32" autocomplete="off" placeholder="Enter a name..." autofocus>
+<button id="roastBtn">ROAST ME</button>
+</div>
+<div class="roast" id="result">
+<small id="label"></small>
+<div class="roastText" id="text"></div>
+<button class="again" id="again">Another one</button>
+</div>
+</section>
+</main>
+<script>
+const templates=[
+n=>`${n}, you have the confidence of someone who has never once checked whether they were right.`,
+n=>`${n} sounds like a username created at 3 AM and abandoned before breakfast.`,
+n=>`${n}, if bad decisions were an Olympic sport, you'd still somehow miss the podium.`,
+n=>`${n} walks into a room and somehow lowers the Wi-Fi signal.`,
+n=>`${n}, your brain has 37 tabs open and every single one is buffering.`,
+n=>`${n} is proof that autocorrect sometimes just gives up.`,
+n=>`${n}, you could lose an argument with a loading screen.`,
+n=>`${n}, even your alarm clock is starting to question your life choices.`,
+n=>`${n} has the rare talent of making a simple task look like a side quest.`,
+n=>`${n}, you're not the main character. You're the tutorial pop-up everyone keeps closing.`,
+n=>`${n}, your plans have more plot holes than a low-budget movie.`,
+n=>`${n} could turn a two-minute job into a three-season series.`,
+n=>`${n}, your greatest enemy isn't anyone else. It's the button labeled "Are you sure?"`,
+n=>`${n}, you bring the same energy as a phone at 1% pretending it can survive the night.`,
+n=>`${n}, if procrastination paid rent, you'd own the building.`
+];
+let last=-1;
+function generate(){
+ const input=document.getElementById('name');
+ const n=input.value.trim()||'You';
+ let i; do{i=Math.floor(Math.random()*templates.length)}while(i===last&&templates.length>1); last=i;
+ document.getElementById('label').textContent='TARGET: '+n.toUpperCase();
+ document.getElementById('text').textContent=templates[i](n);
+ document.getElementById('result').classList.remove('show'); void document.getElementById('result').offsetWidth; document.getElementById('result').classList.add('show');
+}
+document.getElementById('roastBtn').onclick=generate;
+document.getElementById('again').onclick=generate;
+document.getElementById('name').addEventListener('keydown',e=>{if(e.key==='Enter')generate()});
+</script>
+</body>
+</html>
