@@ -10,16 +10,13 @@
 </head>
 <body>
 <div class="wrap">
-<div class="top"><div><h1>Peer Chat</h1><div class="sub">Direct browser-to-browser room chat</div></div><div class="pill" id="state">Offline</div></div>
+<div class="top"><div><h1>Peer Chat</h1><div class="sub">One public peer-to-peer chat · automatic connection</div></div><div class="pill" id="state">Connecting…</div></div>
 <div class="grid">
 <section class="panel">
 <label class="label">Your name</label><input id="name" maxlength="30" placeholder="Name">
-<label class="label">Room code</label><input id="room" maxlength="40" placeholder="Make a room code">
-<div class="buttons"><button class="btn primary" id="host">Create room</button><button class="btn" id="join">Join room</button></div>
-<div class="buttons"><button class="btn" id="copy">Copy invite</button><button class="btn" id="leave">Leave</button></div>
-<div class="room" id="info">Create or join a room. Messages are sent directly between connected browsers and are not written to this site's storage.</div>
+<div class="room" id="info">Everyone uses the same public chat. No room code or invite is needed.</div>
 <label class="label">Media</label><input id="file" type="file" accept="image/*,video/*">
-<div class="status" id="status"></div>
+<div class="status" id="status">Starting peer connection…</div>
 </section>
 <section class="panel chat">
 <div class="messages" id="messages"></div>
@@ -32,32 +29,65 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 const $=x=>document.getElementById(x);
-let peer=null,roomCode='',localStream=null,connections=new Map(),mediaCalls=new Map();
+const LOBBY='ikirumi-public-peer-chat-v1';
+let peer=null,connections=new Map(),knownPeers=new Set(),mediaCalls=new Map(),localStream=null,starting=false;
 const name=()=>($('name').value.trim()||'Anonymous').slice(0,30);
 function status(t){$('status').textContent=t}
 function say(author,text,media=null,mine=false){const d=document.createElement('div');d.className='msg'+(mine?' mine':'');const meta=document.createElement('div');meta.className='meta';meta.textContent=mine?'You':author;d.appendChild(meta);if(media){const el=media.type.startsWith('image/')?document.createElement('img'):document.createElement('video');el.className='media';el.src=media.url;if(el.tagName==='VIDEO'){el.controls=true;el.playsInline=true}d.appendChild(el)}else d.appendChild(document.createTextNode(text));$('messages').appendChild(d);$('messages').scrollTop=$('messages').scrollHeight}
-function broadcast(data){connections.forEach(c=>{if(c.open)c.send(data)})}
-function setupConn(c){connections.set(c.peer,c);c.on('open',()=>{status('Connected · everyone in this room can chat')});c.on('data',x=>receive(x));c.on('close',()=>connections.delete(c.peer))}
-function receive(x){if(x.kind==='text')say(x.name,x.text);if(x.kind==='media'){const blob=new Blob([x.data],{type:x.type});say(x.name,'',{type:x.type,url:URL.createObjectURL(blob)})}}
-function startPeer(isHost){
- const id=isHost?roomCode:undefined;
- peer=new Peer(id);
- peer.on('open',id=>{roomCode=id;$('room').value=id;$('state').textContent='In room';$('info').textContent='Share this room code. Chat, media and calls are peer-to-peer; this page does not save chat history.';status(isHost?'Room created · share the code':'Joined room · connecting…');if(!isHost){const c=peer.connect(roomCode,{reliable:true});setupConn(c)}}); 
- peer.on('connection',setupConn);
- peer.on('call',async call=>{if(!localStream)try{localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true})}catch{return}call.answer(localStream);showCall(call)});
- peer.on('error',e=>{status(e.type==='unavailable-id'?'That room is already active. Choose another room.':String(e.message||e));});
+function sendTo(c,data){try{if(c&&c.open)c.send(data)}catch{}}
+function broadcast(data,except=''){connections.forEach((c,id)=>{if(id!==except)sendTo(c,data)})}
+function remember(id){if(id&&id!==peer?.id&&id!==LOBBY)knownPeers.add(id)}
+function connectTo(id){if(!id||id===peer?.id)return;if(connections.has(id)&&connections.get(id).open)return;if(!peer||peer.destroyed)return;remember(id);const c=peer.connect(id,{reliable:true,metadata:{name:name()}});setupConn(c)}
+function connectKnown(){[...knownPeers].forEach(connectTo)}
+function announceSelf(){broadcast({kind:'peer-list',peers:[peer.id,...knownPeers]})}
+function setupConn(c){
+if(!c||c.peer===peer?.id)return;
+const old=connections.get(c.peer);
+if(old&&old!==c){try{old.close()}catch{}}
+connections.set(c.peer,c);
+remember(c.peer);
+c.on('open',()=>{sendTo(c,{kind:'hello',id:peer.id,name:name(),peers:[...knownPeers]});$('state').textContent='Online';status('Connected · automatically linked to the public chat');connectKnown();announceSelf()});
+c.on('data',x=>receive(x,c.peer));
+c.on('close',()=>{if(connections.get(c.peer)===c)connections.delete(c.peer);setTimeout(()=>connectTo(c.peer),1200);updateState()});
+c.on('error',()=>{if(connections.get(c.peer)===c)connections.delete(c.peer);setTimeout(()=>connectTo(c.peer),2500);updateState()});
+}
+function receive(x,from){
+if(!x||typeof x!=='object')return;
+if(x.kind==='hello'){remember(x.id);(x.peers||[]).forEach(remember);connectKnown();sendTo(connections.get(from),{kind:'peer-list',peers:[peer.id,...knownPeers]});return}
+if(x.kind==='peer-list'){(x.peers||[]).forEach(remember);connectKnown();return}
+if(x.kind==='text'){say(x.name,x.text);broadcast(x,from);return}
+if(x.kind==='media'){const blob=new Blob([x.data],{type:x.type});say(x.name,'',{type:x.type,url:URL.createObjectURL(blob)});broadcast(x,from)}
+}
+function updateState(){const count=[...connections.values()].filter(c=>c.open).length;$('state').textContent=count?'Online · '+count+' peers':'Reconnecting…'}
+function makePeer(){
+if(starting)return;
+starting=true;
+try{if(peer&&!peer.destroyed)peer.destroy()}catch{}
+peer=new Peer();
+peer.on('open',id=>{starting=false;status('Finding everyone automatically…');connectTo(LOBBY);connectKnown()});
+peer.on('connection',setupConn);
+peer.on('call',async call=>{
+if(!localStream){try{localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true})}catch{return}}
+call.answer(localStream);showCall(call);
+});
+peer.on('disconnected',()=>{status('Signaling connection lost · reconnecting…');try{peer.reconnect()}catch{}});
+peer.on('close',()=>{starting=false;setTimeout(makePeer,1500)});
+peer.on('error',e=>{
+starting=false;
+if(e.type==='peer-unavailable'||e.type==='network'||e.type==='server-error'||e.type==='socket-error'||e.type==='socket-closed'){status('Peer unavailable · retrying automatically…');setTimeout(()=>{if(peer&&!peer.destroyed){try{peer.reconnect()}catch{}}connectTo(LOBBY);connectKnown()},2000);return}
+status('Reconnecting automatically…');
+if(e.type!=='unavailable-id')setTimeout(makePeer,1800);
+});
 }
 function showCall(call){mediaCalls.set(call.peer,call);call.on('stream',s=>{let v=document.getElementById('v-'+call.peer);if(!v){v=document.createElement('video');v.id='v-'+call.peer;v.autoplay=true;v.playsInline=true;v.className='media';$('videos').appendChild(v)}v.srcObject=s});call.on('close',()=>{const v=document.getElementById('v-'+call.peer);if(v)v.remove();mediaCalls.delete(call.peer)})}
-$('host').onclick=()=>{roomCode=$('room').value.trim()||Math.random().toString(36).slice(2,9);startPeer(true)};
-$('join').onclick=()=>{roomCode=$('room').value.trim();if(!roomCode)return status('Enter a room code');startPeer(false)};
-$('copy').onclick=async()=>{if(!roomCode)return status('Create or join a room first');await navigator.clipboard.writeText(location.href.split('#')[0]+'#room='+encodeURIComponent(roomCode));status('Invite copied')};
-$('leave').onclick=()=>{if(localStream)localStream.getTracks().forEach(t=>t.stop());if(peer)peer.destroy();location.reload()};
 $('send').onclick=()=>{const text=$('input').value.trim();if(!text)return;$('input').value='';const x={kind:'text',name:name(),text};say('',text,null,true);broadcast(x)};
 $('input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('send').click()}});
-$('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(f.size>8*1024*1024){status('Media is limited to 8 MB per file');e.target.value='';return}const buf=await f.arrayBuffer();const x={kind:'media',name:name(),type:f.type,data:buf};broadcast(x);say('', '',{type:f.type,url:URL.createObjectURL(new Blob([buf],{type:f.type}))},true);status('Media sent directly to peers');e.target.value=''};
-$('call').onclick=async()=>{try{if(!localStream)localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});connections.forEach(c=>{const call=peer.call(c.peer,localStream);showCall(call)});status('Video call started')}catch(e){status('Camera/microphone permission was not granted')}};
+$('file').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(f.size>8*1024*1024){status('Media is limited to 8 MB per file');e.target.value='';return}const buf=await f.arrayBuffer();const x={kind:'media',name:name(),type:f.type,data:buf};broadcast(x);say('', '',{type:f.type,url:URL.createObjectURL(new Blob([buf],{type:f.type}))},true);status('Media sent directly to connected peers');e.target.value=''};
+$('call').onclick=async()=>{try{if(!localStream)localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});connections.forEach(c=>{if(c.open){const call=peer.call(c.peer,localStream);showCall(call)}});status('Video call started with connected peers')}catch{status('Camera/microphone permission was not granted')}};
 $('hang').onclick=()=>{mediaCalls.forEach(c=>c.close());mediaCalls.clear();if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}$('videos').innerHTML='';status('Call ended')};
-if(location.hash.startsWith('#room=')){$('room').value=decodeURIComponent(location.hash.slice(6));$('info').textContent='Invite room detected. Enter your name, then join.'}
+setInterval(()=>{if(peer&&!peer.destroyed){if(peer.disconnected){try{peer.reconnect()}catch{}}connectTo(LOBBY);connectKnown()}},5000);
+setInterval(updateState,2000);
+makePeer();
 </script>
 </body>
 </html>
