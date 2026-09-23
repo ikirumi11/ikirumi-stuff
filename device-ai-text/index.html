@@ -16,12 +16,12 @@
 <section class="panel">
 <h2>Local AI</h2>
 <label class="label" for="model">Model</label>
-<select id="model"><option value="qwen">Qwen 2.5 0.5B Instruct · small</option></select>
+<select id="model"><option value="tiny">SmolLM2 135M Instruct · tiny · under 250 MB</option></select>
 <label class="label" for="temperature">Temperature</label>
 <input id="temperature" type="range" min="0" max="1.5" step="0.1" value="0.7">
 <div class="memory"><strong>Saved on this device</strong><span id="memoryText">Chats and settings use local browser storage. Nothing is uploaded for inference.</span></div>
 <div class="actions"><button class="btn" id="newChat">New chat</button><button class="btn" id="clear">Clear saved data</button></div>
-<div class="small">The first use needs to download the AI model. After it is cached, the model is reused locally. Shorter context and responses keep the interface more responsive. AI generation is performed on the device, not by a text-generation server.</div>
+<div class="small">The tiny model is designed to stay under 250 MB. It is slower and less capable, but uses much less storage. Messages can always be sent while the AI is generating; they are queued and processed in order. AI generation is performed on the device, not by a text-generation server.</div>
 <div class="status" id="status">Preparing local AI…</div>
 </section>
 <section class="panel chat">
@@ -34,7 +34,7 @@
 <script>
 const $=id=>document.getElementById(id);
 const messages=$('messages'),input=$('input'),send=$('send'),status=$('status'),progress=$('progress'),pill=$('pill');
-const DB='device-ai-text-memory-v1';let db=null,engine=null,busy=false,history=[];
+const DB='device-ai-text-memory-v1';let db=null,engine=null,busy=false,history=[],queue=[];
 function add(role,text){const d=document.createElement('div');d.className='msg '+role;d.textContent=text;messages.appendChild(d);messages.scrollTop=messages.scrollHeight}
 function save(){try{localStorage.setItem('device-ai-text-history',JSON.stringify(history))}catch(e){}}
 function load(){try{history=JSON.parse(localStorage.getItem('device-ai-text-history')||'[]');if(Array.isArray(history)){for(const m of history){if(m.role==='user'||m.role==='assistant')add(m.role==='user'?'user':'ai',m.content)}}}catch(e){history=[]}}
@@ -45,7 +45,7 @@ async function loadAI(){
   const mod=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2/+esm');
   const {pipeline}=mod;
   status.textContent='Checking local model cache…';progress.textContent='Model download starts on first use. Downloading is not inference.';
-  engine=await pipeline('text-generation','onnx-community/Qwen2.5-0.5B-Instruct-ONNX',{device:navigator.gpu?'webgpu':'wasm',dtype:navigator.gpu?'q4':'q8',progress_callback:p=>{
+  engine=await pipeline('text-generation','onnx-community/SmolLM2-135M-Instruct-ONNX',{device:navigator.gpu?'webgpu':'wasm',dtype:'q4',progress_callback:p=>{
    if(p&&typeof p.progress==='number'){progress.textContent=(p.status||'Downloading model')+' · '+p.progress.toFixed(1)+'%'}
    else if(p&&p.status)progress.textContent=p.status+(p.file?' · '+p.file:'');
   }});
@@ -53,7 +53,8 @@ async function loadAI(){
   return {engine};
  }catch(e){console.error(e);pill.textContent='Model unavailable';status.textContent='The local AI model could not be loaded';progress.textContent=String(e?.message||e);progress.className='status danger';throw e}
 }
-async function reply(){if(busy)return;const text=input.value.trim();if(!text)return;input.value='';add('user',text);history.push({role:'user',content:text});save();busy=true;send.disabled=true;status.textContent='Generating locally…';progress.textContent='Message sent · AI is processing on this device';try{if(!engine){const loaded=await loadAI();engine=loaded.engine}await new Promise(requestAnimationFrame);const recent=history.slice(-10);const prompt=recent.map(m=>(m.role==='user'?'User: ':'Assistant: ')+m.content).join('\n')+'\nAssistant:';const out=await engine(prompt,{max_new_tokens:128,do_sample:true,temperature:Number($('temperature').value),return_full_text:false});let answer=Array.isArray(out)?(out[0]?.generated_text||''):(out?.generated_text||'');answer=String(answer).replace(/^Assistant:\s*/,'').trim()||'I could not generate a response.';add('ai',answer);history.push({role:'assistant',content:answer});save();status.textContent='Ready · generated locally';progress.textContent='Message processed locally · no inference request was sent to a generation server'}catch(e){add('ai','Local AI error: '+String(e?.message||e));status.textContent='Local AI failed';progress.textContent='The rest of the site is still available'}finally{busy=false;send.disabled=false}}
+async function processQueue(){if(busy)return;busy=true;try{if(!engine){const loaded=await loadAI();engine=loaded.engine}while(queue.length){status.textContent='Generating locally…';progress.textContent='Message queued · you can keep sending';await new Promise(requestAnimationFrame);const recent=history.slice(-10);const prompt=recent.map(m=>(m.role==='user'?'User: ':'Assistant: ')+m.content).join('\\n')+'\\nAssistant:';const out=await engine(prompt,{max_new_tokens:96,do_sample:true,temperature:Number($('temperature').value),return_full_text:false});let answer=Array.isArray(out)?(out[0]?.generated_text||''):(out?.generated_text||'');answer=String(answer).replace(/^Assistant:\s*/,'').trim()||'I could not generate a response.';add('ai',answer);history.push({role:'assistant',content:answer});save();queue.shift()}status.textContent='Ready · messages can always be sent';progress.textContent='All queued messages processed locally'}catch(e){add('ai','Local AI error: '+String(e?.message||e));status.textContent='Local AI failed';progress.textContent='You can keep sending messages; queued messages remain available'}finally{busy=false;if(queue.length)processQueue()}}
+function reply(){const text=input.value.trim();if(!text)return;input.value='';add('user',text);history.push({role:'user',content:text});save();queue.push(text);progress.textContent=busy?'Message queued · you can keep sending':'Message sent · starting local AI';processQueue()}
 $('newChat').onclick=()=>{history=[];save();messages.innerHTML='<div class="msg ai">New local chat started.</div>'};
 $('clear').onclick=()=>{localStorage.removeItem('device-ai-text-history');history=[];messages.innerHTML='<div class="msg ai">Saved chat data cleared from this browser.</div>';status.textContent='Local chat storage cleared'};
 send.onclick=reply;input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();reply()}});load();openDB().then(()=>{status.textContent='Ready · model will load when you send a message'}).catch(()=>{status.textContent='Local storage unavailable'});
